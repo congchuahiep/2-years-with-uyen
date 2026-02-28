@@ -1,0 +1,8 @@
+export type FillStyle =
+	| "hachure"
+	| "solid"
+	| "zigzag"
+	| "cross-hatch"
+	| "dots"
+	| "dashed"
+	| "zigzag-line";

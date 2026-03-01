@@ -1,15 +1,16 @@
 "use client";
 
-type SoundType = "normal" | "disabled";
+type SoundType = "normal" | "disabled" | "pop";
 
 const sounds: Record<SoundType, string> = {
 	normal: "/sounds/button.mp3",
 	disabled: "/sounds/button-error.mp3",
+	pop: "/sounds/pop.mp3",
 };
 
 const audioRefs: Partial<Record<SoundType, HTMLAudioElement>> = {};
 
-export function playClickSound(type: SoundType = "normal") {
+export function playSound(type: SoundType = "normal") {
 	if (typeof window === "undefined") return;
 
 	// Kiểm tra trạng thái tắt tiếng trong localStorage

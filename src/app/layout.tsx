@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { AudioPreloader } from "@/components/audio-preloader";
+import { MuteButton } from "@/components/mute-button";
 import { fuzzyBubbles, googleSans, pangolin } from "@/configs/font";
 
 export const metadata: Metadata = {
@@ -18,7 +19,8 @@ export default function RootLayout({
 			lang="en"
 			className={`${fuzzyBubbles.variable} ${pangolin.variable} ${googleSans.variable}`}
 		>
-			<body className={`antialiased doodle`}>
+			<body className={`antialiased`}>
+				<MuteButton className="fixed bottom-4 right-4 z-50" />
 				<AudioPreloader />
 				{children}
 			</body>

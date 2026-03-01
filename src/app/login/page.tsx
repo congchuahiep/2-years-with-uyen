@@ -1,14 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
+import { RoughNotation } from "react-rough-notation";
 import { LockIcon } from "@/components/icon/lock-icon";
 import { Button } from "@/components/ui/button";
+import { ErrorMessageBox } from "@/components/ui/error-message-box";
 import { Input } from "@/components/ui/input";
 import { RoughBox } from "@/components/ui/rough-box";
 import { Spinner } from "@/components/ui/spinner";
 import { type ActionState, login } from "./actions";
-import { RoughNotation } from "react-rough-notation";
-import { MuteButton } from "@/components/mute-button";
 
 export default function LoginPage() {
 	const [state, action, pending] = useActionState<ActionState, FormData>(
@@ -18,7 +18,6 @@ export default function LoginPage() {
 
 	return (
 		<main className="flex min-h-screen items-center justify-center p-4 invert-background">
-			<MuteButton className="fixed bottom-4 right-4 z-50" />
 			<RoughBox
 				className="max-w-md w-full z-10"
 				roughConfig={{
@@ -48,23 +47,8 @@ export default function LoginPage() {
 				</div>
 
 				<form className="flex flex-col gap-6" action={action}>
-					{state?.error && (
-						<RoughBox
-							className="text-red-500 text-center font-bold"
-							roughConfig={{
-								fill: "var(--color-red-200)",
-								fillStyle: "zigzag",
-								fillWeight: 4,
-								stroke: "var(--color-red-500)",
-								strokeLineDash: [5, 10],
-								strokeLineDashOffset: 5,
-								roughness: 2,
-								bowing: 0,
-							}}
-						>
-							{state.error}
-						</RoughBox>
-					)}
+					{state?.error && <ErrorMessageBox>{state.error}</ErrorMessageBox>}
+
 					<div className="flex flex-col gap-2">
 						<label htmlFor="email" className="font-bold text-lg">
 							Email của người đẹp
@@ -98,7 +82,12 @@ export default function LoginPage() {
 					>
 						{pending ? (
 							<>
-								<Spinner size={32} strokeWidth={4} stroke="currentColor" />
+								<Spinner
+									size={32}
+									strokeWidth={4}
+									stroke="currentColor"
+									className="size-8"
+								/>
 								Đang mở khoá...
 							</>
 						) : (
@@ -108,6 +97,26 @@ export default function LoginPage() {
 						)}
 					</Button>
 				</form>
+
+				<div className="flex gap-2">
+					<Button
+						fill="var(--color-red-300)"
+						className="flex-1"
+						perspective="right"
+					>
+						Trái
+					</Button>
+					<Button fill="var(--color-green-300)" className="flex-1">
+						Giữa
+					</Button>
+					<Button
+						fill="var(--color-blue-300)"
+						className="flex-1"
+						perspective="left"
+					>
+						Phải
+					</Button>
+				</div>
 			</RoughBox>
 		</main>
 	);

@@ -5,7 +5,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import type { FillStyle } from "@/types/rough";
-import { playClickSound } from "@/utils/audio";
+import { playSound } from "@/utils/audio";
 import cn from "@/utils/cn";
 
 const depthY = 8;
@@ -19,6 +19,7 @@ export function Button({
 	className,
 	fill = "var(--color-primary)",
 	perspective = "center",
+	buttonSize = "normal",
 	disabled,
 	...props
 }: Omit<
@@ -35,6 +36,7 @@ export function Button({
 	| "onDragExit"
 > & {
 	fill?: string;
+	buttonSize?: "normal" | "small";
 	perspective?: "left" | "center" | "right";
 }) {
 	const controls = useAnimation();
@@ -186,11 +188,14 @@ export function Button({
 		svgFront.appendChild(
 			rcFront.rectangle(baseX, baseY, frontW, frontH, {
 				fill: isPressed ? `oklch(from ${fill} calc(l - 0.15) c h)` : fill,
-				fillStyle: "solid" as FillStyle,
+				fillStyle: disabled
+					? ("cross-hatch" as FillStyle)
+					: ("solid" as FillStyle),
 				strokeWidth: 2.5,
 				stroke: disabled
 					? "var(--color-muted-foreground)"
 					: "var(--color-foreground)",
+				fillWeight: 5,
 				roughness: 1.2,
 			}),
 		);
@@ -213,10 +218,11 @@ export function Button({
 		}
 	}
 
-	let pxLeft = "24px";
-	let pxRight = "24px";
-	const pxTop = "16px";
-	const pxBottom = `${depthY + 16}px`;
+	let pxLeft = buttonSize === "small" ? "20px" : "24px";
+	let pxRight = buttonSize === "small" ? "20px" : "24px";
+	const pxTop = buttonSize === "small" ? "12px" : "16px";
+	const pxBottom =
+		buttonSize === "small" ? `${depthY + 12}px` : `${depthY + 16}px`;
 
 	if (perspective === "left") {
 		pxLeft = `${offsetAmount + 24}px`;
@@ -231,15 +237,14 @@ export function Button({
 			onClick={handleShake}
 			className={cn(
 				"relative inline-flex items-center justify-center select-none transition-opacity duration-500",
+				"text-foreground",
 				!isDrawn && "opacity-0",
-				disabled
-					? "text-muted-foreground cursor-not-allowed"
-					: "text-foreground cursor-pointer",
+				disabled ? "cursor-not-allowed" : "cursor-pointer",
 				className,
 			)}
 			onMouseDown={(e) => {
 				setIsPressed(true);
-				playClickSound(disabled ? "disabled" : "normal");
+				playSound(disabled ? "disabled" : "normal");
 				props.onMouseDown?.(e);
 			}}
 			onMouseUp={(e) => {
@@ -252,7 +257,7 @@ export function Button({
 			}}
 			onTouchStart={(e) => {
 				setIsPressed(true);
-				playClickSound(disabled ? "disabled" : "normal");
+				playSound(disabled ? "disabled" : "normal");
 				props.onTouchStart?.(e);
 			}}
 			onTouchEnd={(e) => {
@@ -268,7 +273,7 @@ export function Button({
 				height={size.height}
 				className={cn(
 					"absolute top-0 left-0 pointer-events-none -z-10 overflow-visible",
-					disabled && "opacity-70",
+					disabled && "brightness-90",
 				)}
 			/>
 
@@ -279,7 +284,7 @@ export function Button({
 				height={size.height}
 				className={cn(
 					"absolute top-0 left-0 pointer-events-none z-0 transition-transform duration-75 overflow-visible",
-					disabled && "opacity-70",
+					disabled && "brightness-90",
 				)}
 				style={{ transform: pressTransform }}
 			/>
@@ -287,7 +292,10 @@ export function Button({
 			{/* Lớp chứa nội dung chữ (Cũng dịch chuyển đồng bộ với Lớp nổi) */}
 			<div
 				ref={containerRef}
-				className="w-full flex items-center justify-center font-bold text-xl relative z-10"
+				className={cn(
+					"w-full flex items-center justify-center font-bold relative z-10",
+					buttonSize === "small" ? "text-base" : "text-xl",
+				)}
 				style={{
 					paddingLeft: pxLeft,
 					paddingRight: pxRight,

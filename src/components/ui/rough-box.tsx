@@ -8,10 +8,11 @@ import type { FillStyle } from "@/types/rough";
 import cn from "@/utils/cn";
 
 interface RoughBoxProps {
-	children: React.ReactNode;
+	children?: React.ReactNode;
 	className?: string;
 	roughConfig?: Options & { fillStyle?: FillStyle };
 	padding?: number;
+	shape?: "rectangle" | "circle";
 }
 
 export const RoughBox: React.FC<RoughBoxProps> = ({
@@ -19,6 +20,7 @@ export const RoughBox: React.FC<RoughBoxProps> = ({
 	className,
 	roughConfig = {},
 	padding = 20,
+	shape = "rectangle",
 }) => {
 	const [isDrawn, setIsDrawn] = useState(false);
 
@@ -44,6 +46,8 @@ export const RoughBox: React.FC<RoughBoxProps> = ({
 		return () => resizeObserver.disconnect();
 	}, []);
 
+	const configStr = JSON.stringify(roughConfig);
+
 	useEffect(() => {
 		if (!svgRef.current || size.width === 0 || size.height === 0) return;
 
@@ -51,25 +55,38 @@ export const RoughBox: React.FC<RoughBoxProps> = ({
 			svgRef.current.removeChild(svgRef.current.firstChild);
 		}
 
+		const parsedConfig = JSON.parse(configStr);
 		const rc = rough.svg(svgRef.current);
-		const node = rc.rectangle(2, 2, size.width - 4, size.height - 4, {
+
+		const options = {
 			roughness: 1.5,
 			strokeWidth: 2,
 			fillStyle: "solid",
-			...roughConfig,
-		});
+			...parsedConfig,
+		};
+
+		const node =
+			shape === "circle"
+				? rc.ellipse(
+						size.width / 2,
+						size.height / 2,
+						size.width - 4,
+						size.height - 4,
+						options,
+					)
+				: rc.rectangle(2, 2, size.width - 4, size.height - 4, options);
 
 		svgRef.current.appendChild(node);
 
 		if (!isDrawn) {
 			requestAnimationFrame(() => setIsDrawn(true));
 		}
-	}, [size, roughConfig, isDrawn]);
+	}, [size.width, size.height, configStr, isDrawn, shape]);
 
 	return (
 		<div
 			className={cn(
-				"relative inline-block w-full transition-opacity duration-700",
+				"relative inline-block w-full transition-opacity duration-300",
 				!isDrawn ? "opacity-0" : "opacity-100",
 				className,
 			)}
@@ -83,7 +100,11 @@ export const RoughBox: React.FC<RoughBoxProps> = ({
 			/>
 
 			{/* Nội dung bên trên */}
-			<div ref={containerRef} style={{ padding: `${padding}px` }}>
+			<div
+				ref={containerRef}
+				style={{ padding: `${padding}px` }}
+				className="size-full"
+			>
 				{children}
 			</div>
 		</div>

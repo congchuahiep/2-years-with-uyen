@@ -3,6 +3,7 @@
 import { motion, type PanInfo } from "motion/react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { LongArrowIcon } from "@/components/icon/long-arrow-icon";
 import { Polaroid } from "@/components/ui/polaroid";
 import { playSound } from "@/utils/audio";
 import cn from "@/utils/cn";
@@ -229,129 +230,134 @@ export function PolaroidBoard({
 	};
 
 	return (
-		<RoughBox
-			padding={32}
-			className={cn(
-				"w-full h-full min-h-[500px] flex items-center justify-center relative",
-				className,
-			)}
-			roughConfig={{
-				roughness: 2.5,
-				strokeWidth: 3,
-				stroke: "var(--color-amber-900)",
-				fill: "var(--color-amber-100)", // Corkboard color
-				fillStyle: "cross-hatch",
-				fillWeight: 2,
-			}}
-		>
-			<input
-				type="file"
-				accept="image/*"
-				multiple
-				className="hidden"
-				ref={fileInputRef}
-				onChange={handleFileChange}
-			/>
-
-			<div
-				ref={boardRef}
-				className="absolute inset-4 sm:inset-8 z-0 overflow-hidden"
-			/>
-			{/* <RoughBox
-				className="absolute top-3 left-3 z-50 w-fit text-green-800 font-bold"
-				padding={8}
+		<div className="size-full relative">
+			<RoughBox
+				padding={32}
+				className={cn(
+					"size-full flex items-center justify-center relative",
+					className,
+				)}
 				roughConfig={{
 					roughness: 2.5,
 					strokeWidth: 3,
-					stroke: "transparent",
-					fill: "var(--color-green-200)", // Corkboard color
-					fillStyle: "solid",
-					fillWeight: 2,
+					stroke: "var(--color-amber-900)",
+					fill: "var(--color-amber-100)", // Corkboard color
+					fillStyle: "cross-hatch",
+					fillWeight: 8,
 				}}
 			>
-				Khung ghim ảnh
-			</RoughBox> */}
+				<input
+					type="file"
+					accept="image/*"
+					multiple
+					className="hidden"
+					ref={fileInputRef}
+					onChange={handleFileChange}
+				/>
 
-			<div className="absolute top-3 left-3 z-50 w-fit text-yellow-800 font-bold">
-				Khung ghim ảnh
-			</div>
+				<div
+					ref={boardRef}
+					className="absolute inset-4 sm:inset-8 z-0 overflow"
+				/>
 
-			{images.length === 0 && (
-				<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 text-yellow-800 font-bold text-lg">
-					Hãy chọn ít nhất 1 tấm ảnh
-				</div>
-			)}
-
-			{/* Tooltip cho Board */}
-			<div className="absolute bottom-4 left-4 z-50 flex items-center gap-2">
-				<RoughBox
-					padding={0}
-					className="w-8 h-8 rounded-full"
-					roughConfig={{
-						roughness: 1.5,
-						strokeWidth: 1.5,
-						stroke: "var(--color-purple-600)",
-						fill: "var(--color-purple-200)",
-						fillStyle: "solid",
-					}}
-				>
-					<span
-						className={cn("flex items-center justify-center size-full text-lg")}
+				{/* Tooltip cho Board */}
+				<div className="absolute bottom-4 left-4 z-50 flex items-center gap-2">
+					<RoughBox
+						padding={0}
+						className="w-8 h-8 rounded-full"
+						roughConfig={{
+							roughness: 1.5,
+							strokeWidth: 1.5,
+							stroke: "var(--color-purple-600)",
+							fill: "var(--color-purple-200)",
+							fillStyle: "solid",
+						}}
 					>
-						★
-					</span>
-				</RoughBox>
-				Ảnh chính, ảnh này sẽ được hiển thị ở bìa
-			</div>
+						<span
+							className={cn(
+								"flex items-center justify-center size-full text-lg",
+							)}
+						>
+							★
+						</span>
+					</RoughBox>
+					Ảnh chính, ảnh này sẽ được hiển thị ở bìa
+				</div>
 
-			{/* Nút Upload Góc Dưới Chữ */}
-			<button
-				type="button"
-				onClick={() =>
-					images.length < maxImages && fileInputRef.current?.click()
-				}
-				disabled={images.length >= maxImages}
-				className={cn(
-					"absolute bottom-4 right-4 z-50 group",
-					"flex flex-col items-center gap-1 disabled:opacity-50",
-					"cursor-pointer active:scale-95 transition-transform",
-				)}
-			>
-				<RoughBox
-					padding={0}
-					className="size-14"
-					roughConfig={{
-						roughness: 1.5,
-						stroke: "var(--color-amber-900)",
-						fill: "var(--color-yellow-200)",
-						fillStyle: "solid",
-					}}
-				>
+				{images.length === 0 && (
 					<div
 						className={cn(
-							"flex size-full items-center justify-center",
-							"font-bold text-2xl text-amber-900",
-							"group-hover:scale-110 transition-transform",
+							"absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+							"z-50 text-yellow-700 text-center flex flex-col items-center",
+							"pointer-events-none",
 						)}
 					>
-						+
+						<h2 className="font-bold text-2xl">Khung ghim ảnh</h2>
+						<p>Hãy chọn ít nhất 1 tấm ảnh</p>
+						<div
+							className={cn(
+								"absolute top-[120%] mt-4 left-3/7 w-24 h-24 sm:w-32 sm:h-32",
+								" text-yellow-700/60",
+							)}
+							style={{ transform: "rotate(8deg)" }}
+						>
+							<LongArrowIcon
+								className="w-full h-full"
+								roughConfig={{ strokeWidth: 2.5, roughness: 1, bowing: 2 }}
+							/>
+						</div>
 					</div>
-				</RoughBox>
-				<div
+				)}
+
+				{/* Nút Upload Góc Dưới Chữ */}
+				<button
+					type="button"
+					onClick={() =>
+						images.length < maxImages && fileInputRef.current?.click()
+					}
+					disabled={images.length >= maxImages}
 					className={cn(
-						"bg-white/80 px-2 py-0.5 rounded",
-						"text-xs font-bold text-amber-900",
+						"absolute bottom-4 right-4 z-50 group",
+						"flex flex-col items-center gap-1 disabled:opacity-50",
+						"cursor-pointer active:scale-95 transition-transform",
 					)}
 				>
-					{images.length}/{maxImages} Ảnh
-				</div>
-			</button>
+					<RoughBox
+						padding={0}
+						className="size-14"
+						roughConfig={{
+							roughness: 1.5,
+							stroke: "var(--color-amber-900)",
+							fill: "var(--color-yellow-200)",
+							fillStyle: "solid",
+						}}
+					>
+						<div
+							className={cn(
+								"flex size-full items-center justify-center",
+								"font-bold text-2xl text-amber-900",
+								"group-hover:scale-110 transition-transform",
+							)}
+						>
+							+
+						</div>
+					</RoughBox>
+					<div
+						className={cn(
+							"bg-white/80 px-2 py-0.5 rounded",
+							"text-xs font-bold text-amber-900",
+						)}
+					>
+						{images.length}/{maxImages} Ảnh
+					</div>
+				</button>
+			</RoughBox>
 
 			{images.length > 0 && (
 				<div
 					className={cn(
 						"absolute inset-0 z-10 pointer-events-none p-4 sm:p-8",
-						"flex items-center justify-center overflow-hidden",
+						"flex items-center justify-center overflow",
 					)}
 				>
 					{images.map((img) => (
@@ -462,6 +468,6 @@ export function PolaroidBoard({
 					))}
 				</div>
 			)}
-		</RoughBox>
+		</div>
 	);
 }

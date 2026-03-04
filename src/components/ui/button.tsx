@@ -146,9 +146,7 @@ export function Button({
 				hachureAngle: 60,
 				hachureGap: 3.5,
 				strokeWidth: 2.5,
-				stroke: disabled
-					? "var(--color-muted-foreground)"
-					: "var(--color-foreground)",
+				stroke: "var(--color-foreground)",
 				roughness: 1.5,
 			}),
 		);
@@ -175,9 +173,7 @@ export function Button({
 					fill: fill,
 					fillStyle: "hachure",
 					hachureGap: 3.5,
-					stroke: disabled
-						? "var(--color-muted-foreground)"
-						: "var(--color-foreground)",
+					stroke: "var(--color-foreground)",
 					strokeWidth: 2.5,
 					roughness: 1.5,
 				}),
@@ -192,9 +188,7 @@ export function Button({
 					? ("cross-hatch" as FillStyle)
 					: ("solid" as FillStyle),
 				strokeWidth: 2.5,
-				stroke: disabled
-					? "var(--color-muted-foreground)"
-					: "var(--color-foreground)",
+				stroke: "var(--color-foreground)",
 				fillWeight: 5,
 				roughness: 1.2,
 			}),
@@ -208,7 +202,7 @@ export function Button({
 	// Đoạn code dưới này là dùng cho việc khi người dùng bấm nút
 	// (Sẽ đẩy cả Thẻ Chữ bên trong lẫn SVG Tầng nổi)
 	let pressTransform = "translate(0, 0)";
-	if (isPressed || disabled) {
+	if (isPressed) {
 		if (perspective === "center") {
 			pressTransform = `translateY(${depthY - 4}px)`;
 		} else if (perspective === "left") {

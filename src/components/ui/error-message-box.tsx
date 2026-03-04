@@ -1,9 +1,16 @@
 import { RoughBox } from "@/components/ui/rough-box";
+import cn from "@/utils/cn";
 
-export function ErrorMessageBox({ children }: { children: React.ReactNode }) {
+export function ErrorMessageBox({
+	children,
+	className,
+}: {
+	children: React.ReactNode;
+	className?: string;
+}) {
 	return (
 		<RoughBox
-			className="text-red-500 text-center font-bold"
+			className={cn("text-red-500 text-center font-bold text-wrap", className)}
 			roughConfig={{
 				fill: "var(--color-red-200)",
 				fillStyle: "zigzag",
@@ -14,6 +21,7 @@ export function ErrorMessageBox({ children }: { children: React.ReactNode }) {
 				roughness: 2,
 				bowing: 0,
 			}}
+			padding={8}
 		>
 			{children}
 		</RoughBox>

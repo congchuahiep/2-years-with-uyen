@@ -8,7 +8,7 @@ export function Polaroid({
 }: {
 	className?: string;
 	isLandscape?: boolean;
-	children: React.ReactNode;
+	children?: React.ReactNode;
 }) {
 	return (
 		<RoughBox
@@ -20,10 +20,8 @@ export function Polaroid({
 				fillStyle: "solid",
 			}}
 			className={cn(
-				"shadow-xl mix-blend-normal transition-all duration-300",
-				isLandscape
-					? "w-[240px] md:w-[300px] aspect-4/3"
-					: "w-[160px] md:w-[220px] aspect-3/4",
+				"shadow-md mix-blend-normal transition-all duration-300",
+				isLandscape ? "w-60 md:w-75 aspect-4/3" : "w-40 md:w-55 aspect-3/4",
 				className,
 			)}
 		>

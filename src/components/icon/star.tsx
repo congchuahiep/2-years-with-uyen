@@ -5,12 +5,12 @@ import rough from "roughjs";
 import type { Options } from "roughjs/bin/core";
 import cn from "@/utils/cn";
 
-interface DoorOutIconProps {
+interface StarIconProps {
 	className?: string;
 	roughConfig?: Options;
 }
 
-export function DoorOutIcon({ className, roughConfig = {} }: DoorOutIconProps) {
+export function StarIcon({ className, roughConfig = {} }: StarIconProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const [isDrawn, setIsDrawn] = useState(false);
 
@@ -19,30 +19,31 @@ export function DoorOutIcon({ className, roughConfig = {} }: DoorOutIconProps) {
 	useEffect(() => {
 		if (!svgRef.current) return;
 
+		// Cleanup an toàn để xoá path rác lúc StrictMode hoặc prop change
 		while (svgRef.current.firstChild) {
 			svgRef.current.removeChild(svgRef.current.firstChild);
 		}
 
 		const rc = rough.svg(svgRef.current);
-		const parsedConfig = JSON.parse(configStr);
 
-		// Path:
-		// 1. Khung cửa bên phải: M 14 4 L 20 4 L 20 20 L 14 20
-		// 2. Trục mũi tên đi từ cửa ra (phải sang trái): M 16 12 L 3 12
-		// 3. Hai đỉnh mũi tên: M 7 7 L 2 12 L 7 17
+		// Math Path cho Ngôi sao 5 cánh vừa khít viewBox 24x24
+		// Đi từ đỉnh trên cùng (12, 2) zig zag dọc thân
 		const node = rc.path(
-			"M 14 4 L 20 4 L 20 20 L 14 20 M 16 12 L 3 12 M 7 7 L 2 12 L 7 17",
+			"M 12 2 L 15.09 8.26 L 22 9.27 L 17 14.14 L 18.18 21.02 L 12 17.77 L 5.82 21.02 L 7 14.14 L 2 9.27 L 8.91 8.26 Z",
 			{
-				roughness: 1.5,
+				roughness: 1.2,
 				strokeWidth: 2,
 				stroke: "currentColor",
-				...parsedConfig,
+				...JSON.parse(configStr),
 			},
 		);
 
 		svgRef.current.appendChild(node);
 
-		if (!isDrawn) requestAnimationFrame(() => setIsDrawn(true));
+		// Áp dụng tối ưu isDrawn chống giật flash/chặn render như button.tsx
+		if (!isDrawn) {
+			requestAnimationFrame(() => setIsDrawn(true));
+		}
 	}, [configStr, isDrawn]);
 
 	return (
@@ -50,7 +51,7 @@ export function DoorOutIcon({ className, roughConfig = {} }: DoorOutIconProps) {
 			ref={svgRef}
 			viewBox="0 0 24 24"
 			className={cn(
-				"w-6 h-6 overflow-visible inline-block relative -top-0.5 transition-opacity duration-300",
+				"w-6 h-6 overflow-visible inline-block transition-opacity duration-300",
 				!isDrawn ? "opacity-0" : "opacity-100",
 				className,
 			)}

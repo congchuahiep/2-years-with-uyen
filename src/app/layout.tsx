@@ -5,6 +5,7 @@ import { fuzzyBubbles, pangolin } from "@/configs/font";
 import { AudioPreloaderProvider } from "@/providers/audio-preloader-provider";
 import { ModalContentWrapper, ModalProvider } from "@/providers/modal-provider";
 import QueryProvider from "@/providers/query-provider";
+import { QuestProvider } from "@/providers/quest-provider";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -22,15 +23,17 @@ export default function RootLayout({
 		<html lang="en" className={`${fuzzyBubbles.variable} ${pangolin.variable}`}>
 			<body className={`antialiased bg-purple-400 overflow-hidden`}>
 				<QueryProvider>
-					<AudioPreloaderProvider>
-						<ModalProvider>
-							<ModalContentWrapper>
-								<MuteButton className="fixed bottom-4 left-4 z-50" />
-								{children}
-							</ModalContentWrapper>
-							{modal}
-						</ModalProvider>
-					</AudioPreloaderProvider>
+					<QuestProvider>
+						<AudioPreloaderProvider>
+							<ModalProvider>
+								<ModalContentWrapper>
+									<MuteButton className="fixed bottom-4 left-4 z-50" />
+									{children}
+								</ModalContentWrapper>
+								{modal}
+							</ModalProvider>
+						</AudioPreloaderProvider>
+					</QuestProvider>
 				</QueryProvider>
 			</body>
 		</html>

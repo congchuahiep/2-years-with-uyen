@@ -5,25 +5,17 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { LongArrowIcon } from "@/components/icon/long-arrow-icon";
 import { Polaroid } from "@/components/ui/polaroid";
+import type { PolaroidImage } from "@/types/polaroid";
 import { playSound } from "@/utils/audio";
 import cn from "@/utils/cn";
 import { RoughBox } from "./rough-box";
 
-export interface PolaroidItem {
-	id: string;
-	url: string;
-	x: number;
-	y: number;
-	rotation: number;
-	scale: number;
-	isLandscape: boolean;
-	isMain: boolean;
-	zIndex: number;
+interface PolaroidItem extends PolaroidImage {
 	file: File;
 }
 
 interface ImageUploadResponse {
-	metadata: Omit<PolaroidItem, "file">[];
+	metadata: PolaroidImage[];
 	files: File[];
 }
 
@@ -281,7 +273,9 @@ export function PolaroidBoard({
 							★
 						</span>
 					</RoughBox>
-					Ảnh chính, ảnh này sẽ được hiển thị ở bìa
+					<p className="text-purple-600">
+						Ảnh chính, ảnh này sẽ được hiển thị ở bìa
+					</p>
 				</div>
 
 				{images.length === 0 && (

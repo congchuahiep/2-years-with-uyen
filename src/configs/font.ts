@@ -1,9 +1,4 @@
-import { Fuzzy_Bubbles, Google_Sans, Pangolin } from "next/font/google";
-
-export const googleSans = Google_Sans({
-	variable: "--font-google-sans",
-	subsets: ["latin"],
-});
+import { Fuzzy_Bubbles, Pangolin } from "next/font/google";
 
 export const pangolin = Pangolin({
 	subsets: ["vietnamese"],

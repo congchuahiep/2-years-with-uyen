@@ -8,13 +8,7 @@ Mục tiêu chính của dự án là xây dựng một không gian riêng tư, 
 Điểm khác biệt của dự án nằm ở cách tiếp cận tương tác với thư viện Rough.js, mô phỏng các đường nét ký họa, vết gạch xóa hay những miếng băng keo washi đặc trưng của trang nhật ký thủ công. Không chỉ là một nơi hoán đổi kỷ niệm trên nền tảng số linh hoạt, mà còn tập trung vào cảm xúc của các phần giao diện và chuyển động tự nhiên.
 
 ## Hệ thống Tài liệu Dự án (Documentation)
-Để dễ dàng hơn trong việc tiếp cận mã nguồn cho các lập trình viên (hoặc hệ thống thông minh sau này), toàn bộ kiến thức và quy tắc thể hiện của dự án được hệ thống hóa tại thư mục `/docs/`. Để bắt đầu phát triển hoặc tìm hiểu, vui lòng tham khảo các tài liệu dưới đây:
-
-1. **[Công Nghệ Và Nền Tảng (Tech Stack)](docs/techstack.md):** Mô tả chi tiết về Next.js, Supabase, Tailwind và các thư viện hỗ trợ đồ họa chính.
-2. **[Phong Cách Thiết Kế (Style Guide)](docs/style.md):** Các nguyên tắc về thao tác UI, thể hiện Bảng viền Rough, Animations và các màu sắc chủ đạo. 
-3. **[Cấu Trúc Thư Mục (Project Structure)](docs/structure.md):** Sơ đồ hệ thống lưu trữ Component và định tuyến (Routes).
-4. **[Lộ Trình Phát Triển (Project Plan)](docs/plan.md):** Các giai đoạn (Phases) nâng cấp cho dự án hiện tại và tương lai.
-5. **[Tính Năng Chính (Features List)](docs/features.md):** Danh sách các hệ thống đặc biệt đang hoạt động (Bảng tương tác ảnh, Mật khẩu mở khóa chung, ...).
+Để dễ dàng hơn trong việc tiếp cận mã nguồn cho các lập trình viên (hoặc hệ thống thông minh sau này), toàn bộ kiến thức và quy tắc thể hiện của dự án được hệ thống hóa tại thư mục `/docs/`. Để bắt đầu phát triển hoặc tìm hiểu,
 
 ## Cài Đặt Và Khởi Chạy
 Để khởi chạy dự án trên máy tính cá nhân, cần đảm bảo việc cài đặt công cụ quản lý Node và chạy các lệnh sau:

@@ -1,41 +1,81 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
+import { flushSync } from "react-dom";
+import { BackButton } from "@/components/back-button";
+import { BowIcon } from "@/components/icon/bow";
+import { BrushIcon } from "@/components/icon/brush";
+import { CameraIcon } from "@/components/icon/camera";
+import { CoffeeIcon } from "@/components/icon/coffee";
+import { HeartIcon } from "@/components/icon/heart";
+import { MarkerIcon } from "@/components/icon/marker";
+import { PencilIcon } from "@/components/icon/pencil";
+import { ShootingStarIcon } from "@/components/icon/shooting-star";
+import { StarIcon } from "@/components/icon/star";
+import { Turntable } from "@/components/icon/turntable-icon";
+import { MusicSearchBox } from "@/components/music-search-box";
+import { BinderPaper } from "@/components/ui/binder-paper";
 import { Button } from "@/components/ui/button";
 import { ErrorMessageBox } from "@/components/ui/error-message-box";
 import { Input } from "@/components/ui/input";
-import {
-	PolaroidBoard,
-	type PolaroidItem,
-} from "@/components/ui/polaroid-board";
-import { RoughBox } from "@/components/ui/rough-box";
-import { Select } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
-import { BinderPaper } from "@/components/ui/binder-paper";
-import cn from "@/utils/cn";
-import { type CreateMomentState, createMoment } from "./actions";
-import { DoorOutIcon } from "@/components/icon/door-out";
-import { RoughNotation } from "react-rough-notation";
-import { useSafeBack } from "@/hooks/use-safe-back";
-import { Switch } from "@/components/ui/switch";
-import { RoughTag } from "@/components/ui/rough-tag";
-import { StarIcon } from "@/components/icon/star";
-import { ShootingStarIcon } from "@/components/icon/shooting-star";
-import { HeartIcon } from "@/components/icon/heart";
-import { ArrowIcon } from "@/components/icon/arrow";
-import { DaisyIcon } from "@/components/icon/daisy";
-import { BowIcon } from "@/components/icon/bow";
-import { HighlighterIcon } from "@/components/icon/highlighter";
-import { PencilIcon } from "@/components/icon/pencil";
-import { PenIcon } from "@/components/icon/pen";
-import { BrushIcon } from "@/components/icon/brush";
-import { MarkerIcon } from "@/components/icon/marker";
+import { Modal } from "@/components/ui/modal";
 import { Polaroid } from "@/components/ui/polaroid";
-import { CoffeeIcon } from "@/components/icon/coffee";
-import { SucculentIcon } from "@/components/icon/succulent";
-import { CameraIcon } from "@/components/icon/camera";
+import { PolaroidBoard } from "@/components/ui/polaroid-board";
+import { RoughBox } from "@/components/ui/rough-box";
+import { RoughTag } from "@/components/ui/rough-tag";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import type { Color } from "@/types/color";
+import type { DeezerTrack } from "@/types/dezzer";
+import type { PolaroidImage } from "@/types/polaroid";
+import cn from "@/utils/cn";
+import { getColor } from "@/utils/color";
+import { createClient } from "@/utils/supabase/client";
+import { type CreateMomentState, createMoment } from "./actions";
+
+const MARKER_DECORATIONS = [
+	{
+		pos: "-right-8",
+		bottom: "-bottom-24",
+		rotate: "-rotate-16",
+		color: "beige",
+	},
+	{ pos: "right-8", bottom: "-bottom-30", rotate: "-rotate-12", color: "sky" },
+	{
+		pos: "right-24",
+		bottom: "-bottom-28",
+		rotate: "-rotate-16",
+		color: "green",
+	},
+	{
+		pos: "right-42",
+		bottom: "-bottom-32",
+		rotate: "-rotate-8",
+		color: "yellow",
+	},
+	{
+		pos: "right-56",
+		bottom: "-bottom-30",
+		rotate: "-rotate-14",
+		color: "purple",
+	},
+	{ pos: "right-72", bottom: "-bottom-30", rotate: "-rotate-8", color: "red" },
+	{ pos: "right-88", bottom: "-bottom-34", rotate: "-rotate-6", color: "blue" },
+	{
+		pos: "right-100",
+		bottom: "-bottom-34",
+		rotate: "-rotate-16",
+		color: "pink",
+	},
+	{
+		pos: "right-112",
+		bottom: "-bottom-34",
+		rotate: "-rotate-16",
+		color: "orange",
+	},
+];
 
 const initialState: CreateMomentState = {
 	error: "",
@@ -44,13 +84,31 @@ const initialState: CreateMomentState = {
 
 export default function CreateMomentPage() {
 	const router = useRouter();
-	const safeBack = useSafeBack();
-	const [state, formAction, isPending] = useActionState(
-		createMoment,
-		initialState,
-	);
+	const supabase = createClient();
+
+	const [isPendingAction, startTransition] = useTransition();
+	const [state, formAction] = useActionState(createMoment, initialState);
+
+	const [title, setTitle] = useState(state?.fields?.title || "");
+	const [content, setContent] = useState(state?.fields?.content || "");
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-	const [metadata, setMetadata] = useState<Omit<PolaroidItem, "file">[]>([]);
+	const [metadata, setMetadata] = useState<PolaroidImage[]>([]);
+	const [isUploading, setIsUploading] = useState(false);
+	const [letterColor, setLetterColor] = useState<Color>("beige");
+	const [uploadError, setUploadError] = useState("");
+	const [selectedTrack, setSelectedTrack] = useState<DeezerTrack | undefined>(
+		undefined,
+	);
+
+	const [isTrackModalVisible, setIsTrackModalVisible] = useState(false);
+
+	useEffect(() => {
+		if (state?.fields) {
+			setTitle(state.fields.title || "");
+			setContent(state.fields.content || "");
+			setLetterColor(state.fields.letterColor || "beige");
+		}
+	}, [state?.fields]);
 
 	useEffect(() => {
 		if (state?.success) {
@@ -58,74 +116,176 @@ export default function CreateMomentPage() {
 		}
 	}, [state, router]);
 
-	const handleSubmit = (formData: FormData) => {
-		// Thêm toàn bộ file ảnh vào formData trước khi gửi đi
-		selectedFiles.forEach((file) => {
-			formData.append("images", file);
-		});
+	useEffect(() => {
+		console.log(isUploading);
+	}, [isUploading]);
 
-		const _currentDateLocal = new Date().toISOString().slice(0, 16);
-		const formEventDate = formData.get("eventDate");
-		if (!formEventDate) {
-			formData.set("eventDate", _currentDateLocal);
-		}
-
-		formAction(formData);
+	const handleTrackSelect = (track: DeezerTrack) => {
+		setSelectedTrack(track);
+		setIsTrackModalVisible(false);
 	};
+
+	const handleSubmit = async (formData: FormData, isDraft: boolean) => {
+		flushSync(() => setIsUploading(true));
+		setUploadError("");
+
+		try {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+
+			if (!user) {
+				setUploadError("Bạn cần đăng nhập để thực hiện chức năng này");
+				flushSync(() => setIsUploading(false));
+				return;
+			}
+
+			if (isDraft) {
+				formData.set("status", "draft");
+			} else {
+				const isPublic = formData.get("is_public") === "on";
+				formData.set("status", isPublic ? "public" : "private");
+			}
+			formData.delete("is_public");
+
+			const newMetadata = [...metadata];
+
+			for (let i = 0; i < selectedFiles.length; i++) {
+				const file = selectedFiles[i];
+				const fileExt = file.name.split(".").pop();
+				const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+				const { data: uploadData, error: uploadError } = await supabase.storage
+					.from("moment_images")
+					.upload(fileName, file);
+
+				if (uploadError) {
+					console.error("Lỗi upload ảnh:", uploadError);
+					throw new Error("Không thể tải ảnh lên hệ thống.");
+				}
+
+				const {
+					data: { publicUrl },
+				} = supabase.storage
+					.from("moment_images")
+					.getPublicUrl(uploadData.path);
+
+				if (newMetadata[i]) {
+					newMetadata[i].url = publicUrl;
+				}
+			}
+
+			const _currentDateLocal = new Date().toISOString().slice(0, 16);
+			const formEventDate = formData.get("eventDate");
+			if (!formEventDate) formData.set("eventDate", _currentDateLocal);
+
+			if (selectedTrack)
+				formData.set("music_track", JSON.stringify(selectedTrack));
+			formData.set("metadata", JSON.stringify(newMetadata));
+			formData.set("letterColor", letterColor);
+
+			startTransition(() => formAction(formData));
+		} catch (err) {
+			setUploadError(
+				(err as Error).message || "Có lỗi xảy ra khi tải ảnh lên.",
+			);
+		} finally {
+			setIsUploading(false);
+		}
+	};
+
+	const hasImages = selectedFiles.length > 0;
+	const hasTitle = title.trim() !== "";
+	const hasContent = content.trim() !== "";
+
+	const canDraft = hasImages || hasTitle || hasContent;
+	const canPublish = hasImages && hasTitle;
+
+	// Tổng hợp trạng thái loading từ cả việc upload và việc xử lý action trên server
+	const isLoading = isUploading || isPendingAction;
 
 	return (
 		<div className="flex flex-col h-screen items-center justify-center relative overflow-hidden">
-			<Button
-				onClick={() => safeBack()}
-				fill="var(--color-red-300)"
-				perspective="right"
-				buttonSize="small"
-				className="absolute top-4 left-4 z-10"
-			>
-				<DoorOutIcon className="size-5" />
-				Thôi, không tạo nữa
-			</Button>
+			<BackButton>Thôi, không tạo nữa</BackButton>
 
 			<div className="absolute top-4 right-4 z-10 space-x-2">
-				<Button
-					fill="var(--color-yellow-300)"
-					perspective="left"
-					buttonSize="small"
-				>
-					Lưu nháp
-				</Button>
-				<Button
-					type="submit"
-					form="moment-form"
-					disabled={isPending || selectedFiles.length === 0}
-					className=""
-					fill="var(--color-green-300)"
-					perspective="left"
-					buttonSize="small"
-				>
-					{isPending ? (
-						<>
-							<Spinner size={24} /> Đang lưu nè...
-						</>
-					) : (
-						<>Lưu Lại</>
-					)}
-				</Button>
+				{isLoading || isUploading ? (
+					<RoughBox
+						roughConfig={{
+							fill: "var(--color-green-600)",
+							stroke: "var(--color-green-50)",
+						}}
+						className="cursor-progress select-none"
+					>
+						<div className="flex gap-2 items-center font-bold text-green-50 px-4 py-2">
+							<Spinner size={24} />{" "}
+							{isUploading ? "Đang ghim ảnh..." : "Đang lưu kỉ niệm..."}
+						</div>
+					</RoughBox>
+				) : (
+					<>
+						<Button
+							type="submit"
+							form="moment-form"
+							formAction={(formData) => handleSubmit(formData, true)}
+							formNoValidate
+							disabled={!canDraft}
+							fill="var(--color-yellow-300)"
+							perspective="left"
+							buttonSize="small"
+						>
+							Lưu nháp
+						</Button>
+						<Button
+							type="submit"
+							form="moment-form"
+							disabled={!canPublish}
+							fill="var(--color-green-300)"
+							perspective="left"
+							buttonSize="small"
+						>
+							Đăng tải
+						</Button>
+					</>
+				)}
 			</div>
 
-			{/* Nhóm Họa cụ Văn phòng phẩm */}
-			<MarkerIcon
-				className="absolute -bottom-10 left-8 h-64 text-slate-800 rotate-24 z-0 drop-shadow-xl"
-				roughConfig={{ fill: "var(--color-blue-200)" }}
-			/>
-			<MarkerIcon
-				className="absolute -bottom-8 left-30 h-64 text-red-950 rotate-12 z-0 drop-shadow-xl"
-				roughConfig={{ fill: "var(--color-red-200)" }}
-			/>
-			<MarkerIcon
-				className="absolute -bottom-10 left-44 h-68 text-purple-950 rotate-16 z-10 drop-shadow-xl"
-				roughConfig={{ fill: "var(--color-purple-200)" }}
-			/>
+			<button
+				type="button"
+				onClick={() => setIsTrackModalVisible(true)}
+				className={cn(
+					"absolute -bottom-16 left-8 cursor-pointer z-20 rotate-12",
+					"drop-shadow-md hover:drop-shadow-highlight",
+				)}
+			>
+				<Turntable playingTrack={selectedTrack} className="w-100 h-auto" />
+			</button>
+
+			{MARKER_DECORATIONS.map((marker, index) => (
+				<MarkerIcon
+					// biome-ignore lint/suspicious/noArrayIndexKey: Static element
+					key={index}
+					className={cn(
+						"absolute h-64 z-10 drop-shadow-xl hover:drop-shadow-highlight",
+						"cursor-pointer hover:h-72 transition-all duration-150",
+						letterColor === marker.color ? "h-76!" : "",
+						marker.pos,
+						marker.bottom,
+						marker.rotate,
+						marker.color === "beige"
+							? "text-amber-950"
+							: `text-${marker.color}-950`,
+					)}
+					onClick={() => setLetterColor(marker.color as Color)}
+					roughConfig={{
+						fill:
+							marker.color === "beige"
+								? "var(--color-yellow-100)"
+								: `var(--color-${marker.color}-300)`,
+					}}
+				/>
+			))}
+
 			<BrushIcon
 				className="absolute top-32 -right-10 h-90 text-slate-800 -rotate-15 drop-shadow-md"
 				roughConfig={{ stroke: "currentColor" }}
@@ -140,7 +300,7 @@ export default function CreateMomentPage() {
 				className="absolute top-24 -left-12 w-80 text-slate-800 -rotate-45 drop-shadow-lg"
 				roughConfig={{ fill: "var(--color-slate-300)" }}
 			/>
-			<SucculentIcon className="absolute -bottom-32 right-0 size-70 text-slate-800 -rotate-12 z-10 drop-shadow-xl" />
+			{/*<SucculentIcon className="absolute top-32 right-0 size-70 text-slate-800 -rotate-12 z-10 drop-shadow-xl" />*/}
 
 			<StarIcon
 				className="absolute bottom-32 -left-4 size-32 text-amber-300 -rotate-12 -z-10"
@@ -150,19 +310,19 @@ export default function CreateMomentPage() {
 				}}
 			/>
 
-			<Polaroid className="absolute top-100 left-0 -rotate-12 scale-70 -z-10 drop-shadow-xl">
+			<Polaroid className="absolute top-100 left-0 -rotate-12 scale-70 z-0 drop-shadow-xl">
 				<RoughBox
 					className="size-full"
 					roughConfig={{ fill: "var(--color-stone-400)" }}
 				/>
 			</Polaroid>
-			<Polaroid className="absolute top-95 left-0 rotate-4 scale-70 -z-10">
+			<Polaroid className="absolute top-95 left-0 rotate-4 scale-70 z-0">
 				<RoughBox
 					className="size-full"
 					roughConfig={{ fill: "var(--color-stone-400)" }}
 				/>
 			</Polaroid>
-			<Polaroid className="absolute top-80 left-12 -rotate-6 scale-70 -z-10">
+			<Polaroid className="absolute top-80 left-12 -rotate-6 scale-70 z-0">
 				<RoughBox
 					className="size-full"
 					roughConfig={{ fill: "var(--color-stone-400)" }}
@@ -171,13 +331,12 @@ export default function CreateMomentPage() {
 
 			<BinderPaper className="w-full max-w-5xl space-y-4 px-2 h-[80%] z-0">
 				<form
-					action={handleSubmit}
+					action={(formData: FormData) => handleSubmit(formData, false)}
 					id="moment-form"
 					className={cn(
 						"flex flex-col md:flex-row items-stretch gap-12 h-full",
 					)}
 				>
-					{/* Doodles & Icons trang trí vây quanh trang */}
 					<StarIcon
 						className="absolute top-16 right-[20%] size-16 text-yellow-400 -rotate-12 z-0"
 						roughConfig={{
@@ -200,27 +359,23 @@ export default function CreateMomentPage() {
 						}}
 					/>
 					<HeartIcon
-						className="absolute bottom-14 left-[30%] size-16 text-red-500 -rotate-12 z-0"
+						className="absolute bottom-20 left-[30%] size-16 text-red-500 -rotate-12 z-0"
 						roughConfig={{ fill: "var(--color-red-300)" }}
 					/>
 					<HeartIcon
-						className="absolute bottom-14 left-[38%] size-8 text-green-500 rotate-3 z-0"
+						className="absolute bottom-20 left-[38%] size-8 text-green-500 rotate-3 z-0"
 						roughConfig={{ fill: "var(--color-green-300)" }}
 					/>
 					<HeartIcon
-						className="absolute bottom-22 left-[43%] size-7 text-purple-500 -rotate-6 z-0"
+						className="absolute bottom-28 left-[43%] size-7 text-purple-500 -rotate-6 z-0"
 						roughConfig={{ fill: "var(--color-purple-300)" }}
 					/>
 					<HeartIcon
-						className="absolute bottom-20 left-[47%] size-6 text-pink-500 rotate-12 z-0"
+						className="absolute bottom-26 left-[47%] size-6 text-pink-500 rotate-12 z-0"
 						roughConfig={{ fill: "var(--color-pink-300)" }}
 					/>
-					<ShootingStarIcon
-						className="absolute bottom-32 left-1/2 w-16 h-16 text-pink-400 z-30 drop-shadow-sm"
-						// roughConfig={{ fill: "var(--color-pink-300)", fillStyle: "hachure" }}
-					/>
+					<ShootingStarIcon className="absolute bottom-32 left-1/2 w-16 h-16 text-pink-400 z-30 drop-shadow-sm" />
 
-					{/* Input ẩn để gửi Metadata JSON */}
 					<input
 						type="hidden"
 						name="metadata"
@@ -228,18 +383,36 @@ export default function CreateMomentPage() {
 					/>
 
 					<RoughTag
-						className="text-2xl absolute top-0 -right-8 z-10 rotate-20"
+						className="text-2xl absolute top-0 -right-8 z-10 rotate-20 text-pink-900"
 						holeOffset={8}
 						padding={{ top: 12, right: 16, bottom: 12, left: 24 }}
-						roughConfig={{ fill: "var(--color-pink-100)" }}
+						roughConfig={{
+							fill: "var(--color-pink-100)",
+							stroke: "var(--color-pink-900)",
+						}}
 					>
 						<div className="flex items-center gap-2 font-bold">
-							Công khai? <Switch name="status" />
+							Công khai? <Switch name="is_public" />
 						</div>
 					</RoughTag>
 
-					{/* Cột Trái: Bảng ghim ảnh Polaroid */}
-					<div className="w-lg h-148 flex flex-col gap-2 z-10 -mt-4">
+					<RoughBox
+						className="absolute bottom-0 left-54 -rotate-2 text-base w-fit max-w-sm"
+						padding={12}
+						roughConfig={{
+							roughness: 2,
+							stroke: "transparent",
+							fill: "var(--color-yellow-100)",
+							fillStyle: "solid",
+						}}
+					>
+						<p className="text-yellow-800">
+							*Để đăng tải kỉ niệm, bạn hãy ghim ít nhất một bức hình và thêm
+							tên kỉ niệm nhé!
+						</p>
+					</RoughBox>
+
+					<div className="w-lg h-148 flex flex-col gap-2 z-50 -mt-4">
 						<PolaroidBoard
 							className="-rotate-6 shadow-md"
 							maxImages={5}
@@ -250,28 +423,26 @@ export default function CreateMomentPage() {
 						/>
 					</div>
 
-					{/* Cột Phải: Form thông tin */}
 					<RoughBox
 						padding={24}
-						className="w-full md:w-2/5 z-10 self-end rotate-3 translate-2 relative"
+						className={cn(
+							"w-full md:w-2/5 z-10 self-end rotate-3 translate-2 relative",
+							"drop-shadow-md",
+						)}
 						roughConfig={{
 							roughness: 4,
 							stroke: "transparent",
 							strokeWidth: 2.5,
-							fill: "var(--color-sky-200)",
+							fill: getColor(letterColor),
 							fillStyle: "zigzag",
 							fillWeight: 12,
 						}}
 					>
 						<div className="flex flex-col gap-6 justify-center">
-							{state?.error && <ErrorMessageBox>{state.error}</ErrorMessageBox>}
+							{(state?.error || uploadError) && (
+								<ErrorMessageBox>{state?.error || uploadError}</ErrorMessageBox>
+							)}
 
-							{/*<ErrorMessageBox>
-								LỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗi
-								LỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗiLỗi
-							</ErrorMessageBox>*/}
-
-							{/* Tiêu đề */}
 							<div className="flex flex-col gap-2">
 								<label htmlFor="title" className="text-lg font-bold">
 									Tên kỷ niệm
@@ -282,7 +453,9 @@ export default function CreateMomentPage() {
 									type="text"
 									placeholder="Hôm nay có gì vui thế?"
 									required
-									disabled={isPending}
+									disabled={isLoading}
+									value={title}
+									onChange={(e) => setTitle(e.target.value)}
 									roughConfig={{
 										roughness: 2,
 										strokeWidth: 2.5,
@@ -293,7 +466,6 @@ export default function CreateMomentPage() {
 								/>
 							</div>
 
-							{/* Thời gian */}
 							<div className="flex flex-col gap-2 w-full">
 								<label htmlFor="eventDate" className="text-lg font-bold">
 									Xảy ra lúc nào
@@ -301,9 +473,9 @@ export default function CreateMomentPage() {
 								<Input
 									id="eventDate"
 									name="eventDate"
-									type="datetime-local"
-									disabled={isPending}
-									defaultValue={new Date().toISOString().slice(0, 16)}
+									type="date"
+									disabled={isLoading}
+									defaultValue={new Date().toISOString().slice(0, 10)}
 									roughConfig={{
 										roughness: 2,
 										strokeWidth: 2.5,
@@ -314,7 +486,6 @@ export default function CreateMomentPage() {
 								/>
 							</div>
 
-							{/* Nội dung */}
 							<div className="flex flex-col gap-2">
 								<label htmlFor="content" className="text-lg font-bold">
 									Kể cho nhau nghe nè
@@ -323,8 +494,10 @@ export default function CreateMomentPage() {
 									id="content"
 									name="content"
 									placeholder="Mọi chuyện bắt đầu từ lúc..."
-									disabled={isPending}
+									disabled={isLoading}
 									className="h-full min-h-48"
+									value={content}
+									onChange={(e) => setContent(e.target.value)}
 									roughConfig={{
 										roughness: 2,
 										strokeWidth: 2.5,
@@ -337,28 +510,14 @@ export default function CreateMomentPage() {
 						</div>
 					</RoughBox>
 				</form>
-
-				{/*<div className="flex gap-2 justify-end">
-					{state?.error && <ErrorMessageBox>{state.error}</ErrorMessageBox>}
-
-					<Button
-						type="submit"
-						disabled={isPending || selectedFiles.length === 0}
-						className=""
-						fill="var(--color-sky-300)"
-						perspective="right"
-						buttonSize="small"
-					>
-						{isPending ? (
-							<>
-								<Spinner size={24} /> Đang lưu nè...
-							</>
-						) : (
-							<>Lưu Lại</>
-						)}
-					</Button>
-				</div>*/}
 			</BinderPaper>
+
+			<Modal
+				isOpen={isTrackModalVisible}
+				onClose={() => setIsTrackModalVisible(false)}
+			>
+				<MusicSearchBox onTrackSelect={handleTrackSelect} />
+			</Modal>
 		</div>
 	);
 }

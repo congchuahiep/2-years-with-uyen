@@ -7,12 +7,13 @@ import type { Options } from "roughjs/bin/core";
 import type { FillStyle } from "@/types/rough";
 import cn from "@/utils/cn";
 
-interface RoughBoxProps {
+interface RoughBoxProps extends React.HTMLAttributes<HTMLDivElement> {
 	children?: React.ReactNode;
 	className?: string;
 	roughConfig?: Options & { fillStyle?: FillStyle };
 	padding?: number;
 	shape?: "rectangle" | "circle";
+	style?: React.CSSProperties;
 }
 
 export const RoughBox: React.FC<RoughBoxProps> = ({
@@ -21,6 +22,8 @@ export const RoughBox: React.FC<RoughBoxProps> = ({
 	roughConfig = {},
 	padding = 20,
 	shape = "rectangle",
+	style,
+	...props
 }) => {
 	const [isDrawn, setIsDrawn] = useState(false);
 
@@ -85,11 +88,13 @@ export const RoughBox: React.FC<RoughBoxProps> = ({
 
 	return (
 		<div
+			{...props}
 			className={cn(
 				"relative inline-block w-full transition-opacity duration-300",
 				!isDrawn ? "opacity-0" : "opacity-100",
 				className,
 			)}
+			style={style}
 		>
 			{/* Lớp SVG nền bên dưới */}
 			<svg

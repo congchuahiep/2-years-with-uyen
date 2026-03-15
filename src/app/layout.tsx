@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
-import { AudioPreloader } from "@/components/audio-preloader";
 import { MuteButton } from "@/components/mute-button";
-import { fuzzyBubbles, googleSans, pangolin } from "@/configs/font";
+import { fuzzyBubbles, pangolin } from "@/configs/font";
+import { AudioPreloaderProvider } from "@/providers/audio-preloader-provider";
+import { ModalContentWrapper, ModalProvider } from "@/providers/modal-provider";
+import QueryProvider from "@/providers/query-provider";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -11,18 +13,25 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
 	children,
-}: Readonly<{
+	modal,
+}: {
 	children: React.ReactNode;
-}>) {
+	modal: React.ReactNode;
+}) {
 	return (
-		<html
-			lang="en"
-			className={`${fuzzyBubbles.variable} ${pangolin.variable} ${googleSans.variable}`}
-		>
-			<body className={`antialiased`}>
-				<MuteButton className="fixed bottom-4 right-4 z-50" />
-				<AudioPreloader />
-				{children}
+		<html lang="en" className={`${fuzzyBubbles.variable} ${pangolin.variable}`}>
+			<body className={`antialiased bg-purple-400 overflow-hidden`}>
+				<QueryProvider>
+					<AudioPreloaderProvider>
+						<ModalProvider>
+							<ModalContentWrapper>
+								<MuteButton className="fixed bottom-4 left-4 z-50" />
+								{children}
+							</ModalContentWrapper>
+							{modal}
+						</ModalProvider>
+					</AudioPreloaderProvider>
+				</QueryProvider>
 			</body>
 		</html>
 	);

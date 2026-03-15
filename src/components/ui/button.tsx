@@ -21,6 +21,7 @@ export function Button({
 	perspective = "center",
 	buttonSize = "normal",
 	disabled,
+	onClick,
 	...props
 }: Omit<
 	React.ComponentPropsWithoutRef<"button">,
@@ -48,15 +49,22 @@ export function Button({
 	const [size, setSize] = useState({ width: 0, height: 0 });
 	const [isPressed, setIsPressed] = useState(false);
 
-	const handleShake = async () => {
+	const handleShake = async (
+		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+	) => {
 		if (disabled) {
+			e.preventDefault();
 			if (navigator.vibrate) navigator.vibrate(50);
 			await controls.start({
 				x: [0, -4, 4, -4, 4, -4, 4, 0],
 				y: [0, -4, 4, -4, 4, -4, 4, 0],
 				transition: { duration: 0.3 },
 			});
+
+			return;
 		}
+
+		onClick?.(e);
 	};
 
 	// CẬP NHẬT KÍCH THƯỚC KHI RENDER
@@ -266,7 +274,7 @@ export function Button({
 				width={size.width}
 				height={size.height}
 				className={cn(
-					"absolute top-0 left-0 pointer-events-none -z-10 overflow-visible",
+					"absolute top-0 left-0 pointer-events-none z-0 overflow-visible",
 					disabled && "brightness-90",
 				)}
 			/>
@@ -287,7 +295,7 @@ export function Button({
 			<div
 				ref={containerRef}
 				className={cn(
-					"w-full flex items-center justify-center font-bold relative z-10",
+					"w-full flex items-center justify-center font-bold relative z-0",
 					buttonSize === "small" ? "text-base" : "text-xl",
 				)}
 				style={{

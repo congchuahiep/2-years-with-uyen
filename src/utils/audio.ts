@@ -44,6 +44,7 @@ export function preloadSounds() {
 		if (!audioRefs[type]) {
 			const audio = new Audio(sounds[type]);
 			audio.preload = "auto";
+			audio.load();
 			audioRefs[type] = audio;
 		}
 	});

@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef } from "react";
 import rough from "roughjs";
 import type { Options } from "roughjs/bin/core";
@@ -16,6 +14,8 @@ export function LongArrowIcon({
 }: LongArrowIconProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 
+	const configStr = JSON.stringify(roughConfig);
+
 	useEffect(() => {
 		if (!svgRef.current) return;
 
@@ -24,6 +24,7 @@ export function LongArrowIcon({
 		}
 
 		const rc = rough.svg(svgRef.current);
+		const parsedConfig = JSON.parse(configStr);
 
 		const node = rc.path(
 			// Mũi tên uốn lượn kiểu chữ S mềm mại chỉ xuống dưới
@@ -32,12 +33,12 @@ export function LongArrowIcon({
 				roughness: 1.8,
 				strokeWidth: 2.5,
 				stroke: "currentColor",
-				...roughConfig,
+				...parsedConfig,
 			},
 		);
 
 		svgRef.current.appendChild(node);
-	}, [roughConfig]);
+	}, [configStr]);
 
 	return (
 		<svg

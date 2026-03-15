@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/configs/env";
+import { route } from "@/configs/route";
 
 export async function updateSession(request: NextRequest) {
 	let supabaseResponse = NextResponse.next({
@@ -41,7 +42,7 @@ export async function updateSession(request: NextRequest) {
 		!/\.(.*)$/.test(request.nextUrl.pathname)
 	) {
 		const url = request.nextUrl.clone();
-		url.pathname = "/login";
+		url.pathname = route.login;
 		return NextResponse.redirect(url);
 	}
 

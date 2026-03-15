@@ -3,10 +3,14 @@
 import { useEffect } from "react";
 import { preloadSounds } from "@/utils/audio";
 
-export function AudioPreloader() {
+export function AudioPreloaderProvider({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
 	useEffect(() => {
 		preloadSounds();
 	}, []);
 
-	return null;
+	return children;
 }

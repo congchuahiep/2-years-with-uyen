@@ -1,6 +1,6 @@
 "use client";
 
-import { useMotionValueEvent, useScroll } from "motion/react";
+import { AnimatePresence, useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
 import { HeroSection } from "@/components/hero-section";
@@ -11,6 +11,10 @@ import { route } from "@/configs/route";
 import { useModal } from "@/providers/modal-provider";
 import type { TimelineItem, TimelinePoint } from "@/types/timeline";
 import cn from "@/utils/cn";
+import { motion } from "motion/react";
+import { RoughTag } from "@/components/ui/rough-tag";
+import { playSound } from "@/utils/audio";
+import Float from "@/components/ui/float";
 
 interface HomeContentProps {
 	totalHeightVh: number;
@@ -27,14 +31,14 @@ export function HomeView({
 }: HomeContentProps) {
 	const { scrollContainerRef } = useModal();
 	const { scrollY } = useScroll({ container: scrollContainerRef });
-	const [reactTimeline, setReactTimeline] = useState<boolean>(false);
+	const [isScrollToTimeline, setIsScrollToTimeline] = useState<boolean>(false);
 
 	useMotionValueEvent(scrollY, "change", (latest) => {
-		setReactTimeline(latest >= window.innerHeight);
+		setIsScrollToTimeline(latest >= window.innerHeight);
 	});
 
 	return (
-		<main className={cn("h-auto relative", reactTimeline && "bg-bg")}>
+		<main className={cn("h-auto relative", isScrollToTimeline && "bg-bg")}>
 			{/* Timeline thực tế, sticky để luôn hiển thị */}
 			<div
 				id="section-timeline"
@@ -63,12 +67,44 @@ export function HomeView({
 			{/* Spacer để tạo không gian cho hiệu ứng "mở hộp" */}
 			<div className="h-screen" />
 
-			<Link href={route.moments.create} className="fixed bottom-4 right-4 z-50">
-				<Button perspective="right" fill="var(--color-blue-300)">
-					<PencilIcon className="scale-200 rotate-45 mr-2" />
-					Tạo kỉ niệm
-				</Button>
-			</Link>
+			<AnimatePresence>
+				{isScrollToTimeline && (
+					<Link
+						href={route.moments.create}
+						className={cn(
+							"fixed -bottom-4 right-2 z-0",
+							"active:scale-95 transition-transform ease-out drop-shadow-xl",
+						)}
+						onClick={() => playSound()}
+					>
+						<Float speed={0.2} amplitude={[10, 10, 10]}>
+							<motion.div
+								initial={{ y: 40, opacity: 0 }}
+								animate={{ y: 0, opacity: 1 }}
+								exit={{ y: 40, opacity: 0 }}
+								transition={{ type: "spring", duration: 0.3 }}
+								className="relative"
+							>
+								<PencilIcon
+									className="h-60 -rotate-45 mr-12"
+									roughConfig={{
+										fill: "var(--color-amber-300)",
+										fillWeight: 3,
+										fillStyle: "zigzag",
+										roughness: 0.8,
+									}}
+								/>
+								<RoughTag
+									className="absolute top-16 left-12 z-10 rotate-12"
+									roughConfig={{ fill: "var(--color-red-300)", roughness: 0.5 }}
+								>
+									Tạo kỉ niệm
+								</RoughTag>
+							</motion.div>
+						</Float>
+					</Link>
+				)}
+			</AnimatePresence>
 		</main>
 	);
 }

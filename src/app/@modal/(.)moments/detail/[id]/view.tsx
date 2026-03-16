@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,7 +15,6 @@ import { dezzerEndpoint } from "@/configs/endpoint";
 import type { DeezerTrack } from "@/types/dezzer";
 import type { RichMoment } from "@/types/moment";
 import cn from "@/utils/cn";
-import { useQuery } from "@tanstack/react-query";
 
 interface ModalMomentDetailContentProps {
 	moment: RichMoment;
@@ -71,10 +71,13 @@ export function ModalMomentDetailView({
 		<Modal isOpen={isModalVisible} onClose={handleClose}>
 			{/* Khung ảnh */}
 			<motion.div
-				className="absolute top-1/2 left-1/3 translate-x-1/2 -translate-y-1/2"
-				initial={{ y: 50, opacity: 0, zIndex: 100 }}
-				animate={{ y: 0, opacity: 1, zIndex: 100 }}
-				exit={{ y: 50, opacity: 0, zIndex: 100 }}
+				className={cn(
+					"absolute top-1/2 left-1/3 translate-x-1/2 -translate-y-1/2",
+					"z-50",
+				)}
+				initial={{ y: 50, opacity: 0 }}
+				animate={{ y: 0, opacity: 1 }}
+				exit={{ y: 50, opacity: 0 }}
 			>
 				{moment.images && moment.images.length > 0 && (
 					<PolaroidViewer images={moment.images} />
@@ -83,12 +86,12 @@ export function ModalMomentDetailView({
 
 			{/* Thông tin */}
 			<motion.div
-				initial={{ y: 50, opacity: 0, zIndex: 100 }}
-				animate={{ y: 0, opacity: 1, zIndex: 100 }}
-				exit={{ y: 50, opacity: 0, zIndex: 100 }}
+				initial={{ y: 50, opacity: 0 }}
+				animate={{ y: 0, opacity: 1 }}
+				exit={{ y: 50, opacity: 0 }}
 				transition={{ type: "spring", bounce: 0, duration: 0.3 }}
 				className={cn(
-					"fixed z-10 top-1/2 right-1/3 translate-x-1/2 -translate-y-1/2",
+					"fixed z-0 top-1/2 right-1/3 translate-x-1/2 -translate-y-1/2",
 					"w-lg bg-transparent gap-0",
 				)}
 			>
@@ -143,9 +146,9 @@ export function ModalMomentDetailView({
 
 			{moment.music_track && (
 				<motion.div
-					initial={{ opacity: 0, zIndex: 100 }}
-					animate={{ opacity: 1, zIndex: 100 }}
-					exit={{ opacity: 0, zIndex: 100 }}
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
 				>
 					<Float
 						speed={0.2}

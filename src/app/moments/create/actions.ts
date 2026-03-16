@@ -1,115 +1,84 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/** biome-ignore-all lint/suspicious/noExplicitAny: Kệ */
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { Color } from "@/types/color";
+import type { DeezerTrack } from "@/types/dezzer";
+import type { PolaroidImage } from "@/types/polaroid";
 import { createClient } from "@/utils/supabase/server";
 
-export type CreateMomentState = {
-	error?: string;
-	fields?: {
-		title?: string;
-		content?: string;
-		letterColor?: Color;
-	};
-	success?: boolean;
-} | null;
+export type CreateMomentPayload = {
+	title: string;
+	content?: string;
+	letterColor: Color;
+	status: "draft" | "public" | "private";
+	eventDate: string;
+	metadata: PolaroidImage[];
+	music_track: DeezerTrack | null;
+};
 
-// Định nghĩa schema validation bằng Zod
 const MomentSchema = z.object({
 	title: z.string().min(1, "Thiếu tiêu đề kìa bạn ơi"),
-	content: z.string().optional(),
+	metadata: z.array(z.any()).min(1, "Bạn chưa chọn ảnh nào cả."),
 });
 
-export async function createMoment(
-	_prevState: CreateMomentState,
-	formData: FormData,
-): Promise<CreateMomentState> {
+export async function createMoment(payload: CreateMomentPayload) {
 	const supabase = await createClient();
 
-	// 1. Lấy thông tin User hiện tại
 	const {
 		data: { user },
 	} = await supabase.auth.getUser();
-
 	if (!user) {
-		return { error: "Bạn cần đăng nhập để thực hiện chức năng này" };
+		throw new Error("Bạn cần đăng nhập để thực hiện chức năng này");
 	}
 
-	const rawData = {
-		title: formData.get("title") as string,
-		content: formData.get("content") as string,
-		letterColor: formData.get("letterColor") as Color,
-	};
+	// Chỉ validate dữ liệu khi không phải là lưu nháp
+	if (payload.status !== "draft") {
+		const validatedFields = MomentSchema.safeParse({
+			title: payload.title,
+			metadata: payload.metadata,
+		});
 
-	// Kiểm tra xem có phải lưu nháp không. Nếu là nháp, không cần validate.
-	const isDraft = formData.get("status") === "draft";
-	let validatedFields: any;
-	if (!isDraft) {
-		validatedFields = MomentSchema.safeParse(rawData);
-		if (!validatedFields.success)
-			return {
-				fields: rawData,
-				error: "Dữ liệu bạn nhập chưa hợp lệ, xem lại nhé.",
-			};
+		if (!validatedFields.success) {
+			const errorMessage = validatedFields.error.message;
+			throw new Error(errorMessage || "Dữ liệu bạn nhập chưa hợp lệ.");
+		}
 	}
 
 	try {
-		const title = rawData.title;
-		const content = rawData.content;
-		const letterColor = rawData.letterColor;
-		const status = formData.get("status") as string;
-		const eventDate = formData.get("eventDate") as string;
-
-		// Nhận Metadata đã được Client xử lý (đã có Public URL của Supabase)
-		const metadataStr = formData.get("metadata");
-		const metadata = metadataStr
-			? JSON.parse(metadataStr as string)
-			: ([] as any[]);
-
-		const musicTrackStr = formData.get("music_track");
-		const musicTrack = musicTrackStr
-			? JSON.parse(musicTrackStr as string)
-			: null;
-
-		if (!isDraft && metadata.length === 0)
-			return {
-				fields: rawData,
-				error: "Bạn chưa chọn ảnh nào cả.",
-			};
-
-		// 2. Lưu thông tin vào Database bảng 'moments'
-		const { error: insertError } = await supabase.from("moments").insert({
-			title,
-			content,
-			status: status,
-			letter_color: letterColor as string,
-			event_date: eventDate
-				? new Date(eventDate).toISOString()
-				: new Date().toISOString(),
-			author_id: user.id,
-			images: metadata,
-			music_track: musicTrack,
-		});
+		const { data, error: insertError } = await supabase
+			.from("moments")
+			.insert({
+				title: payload.title,
+				content: payload.content,
+				status: payload.status,
+				letter_color: payload.letterColor,
+				event_date: new Date(payload.eventDate).toISOString(),
+				author_id: user.id,
+				images: payload.metadata,
+				music_track: payload.music_track,
+			})
+			.select()
+			.single();
 
 		if (insertError) {
 			console.error("Lỗi tạo moment:", insertError);
-			return {
-				fields: rawData,
-				error: "Có lỗi khi lưu khoảnh khắc, hãy thử lại nha",
-			};
+			throw new Error("Có lỗi khi lưu khoảnh khắc, hãy thử lại nha.");
 		}
+
+		// Revalidate cache cho trang chủ và trang chi tiết (nếu có)
+		revalidatePath("/");
+		if (data?.id) {
+			revalidatePath(`/moments/${data.id}`);
+		}
+
+		// Trả về dữ liệu vừa được tạo
+		return data;
 	} catch (error) {
 		console.error("Lỗi hệ thống khi tạo moment:", error);
-		return {
-			fields: rawData,
-			error: "Hệ thống đang gặp sự cố nhỏ, phiền bạn thử lại sau",
-		};
+		if (error instanceof Error) {
+			throw error;
+		}
+		throw new Error("Hệ thống đang gặp sự cố nhỏ, phiền bạn thử lại sau.");
 	}
-
-	// 3. Revalidate và trả về thành công
-	revalidatePath("/");
-	return { success: true };
 }

@@ -2,6 +2,9 @@ import confetti from "canvas-confetti";
 import { createStore } from "zustand";
 import { ALL_QUESTS, type Quest, type QuestID } from "@/types/quest";
 
+export interface QuestStoreOptions {
+	onCompleteQuest: (allCompleted: QuestID[]) => void;
+}
 export interface QuestState {
 	completedQuests: Set<QuestID>;
 	quests: Quest[];
@@ -12,7 +15,7 @@ export interface QuestState {
 	completeQuest: (questId: QuestID) => void;
 }
 
-export const createQuestStore = () =>
+export const createQuestStore = (options: QuestStoreOptions) =>
 	createStore<QuestState>((set, get) => ({
 		completedQuests: new Set(),
 		quests: ALL_QUESTS,
@@ -29,10 +32,11 @@ export const createQuestStore = () =>
 		},
 		completeQuest: (questId) => {
 			if (get().completedQuests.has(questId)) return;
-			set((state) => ({
-				completedQuests: new Set(state.completedQuests).add(questId),
-			}));
-			// Logic gọi API để lưu vào DB sẽ được thêm ở đây
+
+			const newCompletedSet = new Set(get().completedQuests).add(questId);
+			set({ completedQuests: newCompletedSet });
+
+			options.onCompleteQuest(Array.from(newCompletedSet));
 			confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 		},
 	}));

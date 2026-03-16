@@ -1,6 +1,7 @@
 import type { Color } from "./color";
 import type { DeezerTrack } from "./dezzer";
 import type { PolaroidImage } from "./polaroid";
+import type { UserProfile } from "./user-profile";
 
 /**
  * Đại diện cho một bản ghi đơn lẻ từ bảng `moments` trong cơ sở dữ liệu.
@@ -21,21 +22,10 @@ export type Moment = {
 };
 
 /**
- * Đại diện cho dữ liệu hồ sơ công khai của một người dùng.
- * Tương ứng với bảng `profiles`.
- */
-export type Profile = {
-	id: string;
-	first_name: string | null;
-	last_name: string | null;
-	avatar_url: string | null;
-};
-
-/**
  * Đại diện cho một đối tượng "moment" dạng đầy đủ, trong đó `author_id`
  * được thay thế bằng một đối tượng `Profile` đầy đủ.
  * Đây là kiểu dữ liệu mà bạn thường sử dụng trong giao diện ứng dụng.
  */
 export type RichMoment = Omit<Moment, "author_id"> & {
-	author: Profile;
+	author: UserProfile;
 };

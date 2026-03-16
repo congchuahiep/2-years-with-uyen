@@ -1,13 +1,8 @@
 // src/providers/quest-provider.tsx
 "use client";
 
-import {
-	createContext,
-	type ReactNode,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { createContext, type ReactNode, useEffect, useState } from "react";
+import { useCompletedQuestsMutation } from "@/hooks/use-completed-quests-mutation";
 import { createQuestStore, type QuestStoreApi } from "@/stores/quest-store";
 import { createClient } from "@/utils/supabase/client";
 
@@ -16,7 +11,14 @@ export const QuestStoreContext = createContext<QuestStoreApi | undefined>(
 );
 
 export function QuestProvider({ children }: { children: ReactNode }) {
-	const [store] = useState(() => createQuestStore());
+	const mutation = useCompletedQuestsMutation();
+	const [store] = useState(() =>
+		createQuestStore({
+			onCompleteQuest: (allCompleted) => {
+				mutation.mutate(allCompleted);
+			},
+		}),
+	);
 
 	const supabase = createClient();
 

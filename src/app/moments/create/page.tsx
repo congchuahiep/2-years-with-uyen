@@ -1,8 +1,8 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState, useTransition } from "react";
-import { flushSync } from "react-dom";
+import { useState } from "react";
 import { BackButton } from "@/components/back-button";
 import { BowIcon } from "@/components/icon/bow";
 import { BrushIcon } from "@/components/icon/brush";
@@ -27,13 +27,15 @@ import { RoughTag } from "@/components/ui/rough-tag";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	type CreateMomentVariables,
+	useCreateMoment,
+} from "@/hooks/use-create-moment-mutation";
 import type { Color } from "@/types/color";
 import type { DeezerTrack } from "@/types/dezzer";
 import type { PolaroidImage } from "@/types/polaroid";
 import cn from "@/utils/cn";
 import { getColor } from "@/utils/color";
-import { createClient } from "@/utils/supabase/client";
-import { type CreateMomentState, createMoment } from "./actions";
 
 const MARKER_DECORATIONS = [
 	{
@@ -77,149 +79,83 @@ const MARKER_DECORATIONS = [
 	},
 ];
 
-const initialState: CreateMomentState = {
-	error: "",
-	success: false,
-};
-
 export default function CreateMomentPage() {
 	const router = useRouter();
-	const supabase = createClient();
+	const queryClient = useQueryClient();
 
-	const [isPendingAction, startTransition] = useTransition();
-	const [state, formAction] = useActionState(createMoment, initialState);
-
-	const [title, setTitle] = useState(state?.fields?.title || "");
-	const [content, setContent] = useState(state?.fields?.content || "");
+	const [title, setTitle] = useState("");
+	const [content, setContent] = useState("");
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [metadata, setMetadata] = useState<PolaroidImage[]>([]);
-	const [isUploading, setIsUploading] = useState(false);
 	const [letterColor, setLetterColor] = useState<Color>("beige");
-	const [uploadError, setUploadError] = useState("");
 	const [selectedTrack, setSelectedTrack] = useState<DeezerTrack | undefined>(
 		undefined,
 	);
 
 	const [isTrackModalVisible, setIsTrackModalVisible] = useState(false);
+	const [formError, setFormError] = useState("");
 
-	useEffect(() => {
-		if (state?.fields) {
-			setTitle(state.fields.title || "");
-			setContent(state.fields.content || "");
-			setLetterColor(state.fields.letterColor || "beige");
-		}
-	}, [state?.fields]);
-
-	useEffect(() => {
-		if (state?.success) {
+	const { mutate, isPending: isLoading } = useCreateMoment({
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["moments"] });
 			router.push("/");
-		}
-	}, [state, router]);
-
-	useEffect(() => {
-		console.log(isUploading);
-	}, [isUploading]);
+		},
+		onError: (err) => {
+			setFormError(
+				(err as Error).message || "Đã có một lỗi không mong muốn xảy ra.",
+			);
+		},
+	});
 
 	const handleTrackSelect = (track: DeezerTrack) => {
 		setSelectedTrack(track);
 		setIsTrackModalVisible(false);
 	};
 
-	const handleSubmit = async (formData: FormData, isDraft: boolean) => {
-		flushSync(() => setIsUploading(true));
-		setUploadError("");
+	const handleSubmit = (isDraft: boolean) => {
+		const form = document.getElementById("moment-form") as HTMLFormElement;
+		if (!form) return;
 
-		try {
-			const {
-				data: { user },
-			} = await supabase.auth.getUser();
+		const formData = new FormData(form);
+		const variables: CreateMomentVariables = {
+			title: formData.get("title") as string,
+			content: formData.get("content") as string,
+			eventDate:
+				(formData.get("eventDate") as string) ||
+				new Date().toISOString().slice(0, 10),
+			isPublic: formData.get("is_public") === "on",
+			isDraft: isDraft,
+			letterColor: letterColor,
+			selectedTrack: selectedTrack,
+			selectedFiles: selectedFiles,
+			metadata: metadata,
+		};
 
-			if (!user) {
-				setUploadError("Bạn cần đăng nhập để thực hiện chức năng này");
-				flushSync(() => setIsUploading(false));
-				return;
-			}
-
-			if (isDraft) {
-				formData.set("status", "draft");
-			} else {
-				const isPublic = formData.get("is_public") === "on";
-				formData.set("status", isPublic ? "public" : "private");
-			}
-			formData.delete("is_public");
-
-			const newMetadata = [...metadata];
-
-			for (let i = 0; i < selectedFiles.length; i++) {
-				const file = selectedFiles[i];
-				const fileExt = file.name.split(".").pop();
-				const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-				const { data: uploadData, error: uploadError } = await supabase.storage
-					.from("moment_images")
-					.upload(fileName, file);
-
-				if (uploadError) {
-					console.error("Lỗi upload ảnh:", uploadError);
-					throw new Error("Không thể tải ảnh lên hệ thống.");
-				}
-
-				const {
-					data: { publicUrl },
-				} = supabase.storage
-					.from("moment_images")
-					.getPublicUrl(uploadData.path);
-
-				if (newMetadata[i]) {
-					newMetadata[i].url = publicUrl;
-				}
-			}
-
-			const _currentDateLocal = new Date().toISOString().slice(0, 16);
-			const formEventDate = formData.get("eventDate");
-			if (!formEventDate) formData.set("eventDate", _currentDateLocal);
-
-			if (selectedTrack)
-				formData.set("music_track", JSON.stringify(selectedTrack));
-			formData.set("metadata", JSON.stringify(newMetadata));
-			formData.set("letterColor", letterColor);
-
-			startTransition(() => formAction(formData));
-		} catch (err) {
-			setUploadError(
-				(err as Error).message || "Có lỗi xảy ra khi tải ảnh lên.",
-			);
-		} finally {
-			setIsUploading(false);
-		}
+		mutate(variables);
 	};
 
 	const hasImages = selectedFiles.length > 0;
 	const hasTitle = title.trim() !== "";
 	const hasContent = content.trim() !== "";
-
 	const canDraft = hasImages || hasTitle || hasContent;
 	const canPublish = hasImages && hasTitle;
-
-	// Tổng hợp trạng thái loading từ cả việc upload và việc xử lý action trên server
-	const isLoading = isUploading || isPendingAction;
 
 	return (
 		<div className="flex flex-col h-screen items-center justify-center relative overflow-hidden">
 			<BackButton>Thôi, không tạo nữa</BackButton>
 
 			<div className="absolute top-4 right-4 z-10 space-x-2">
-				{isLoading || isUploading ? (
+				{isLoading ? (
 					<RoughBox
 						roughConfig={{
-							fill: "var(--color-green-600)",
-							stroke: "var(--color-green-50)",
+							fill: "var(--color-blue-300)",
+							stroke: "var(--color-sky-800)",
 						}}
-						className="cursor-progress select-none"
+						padding={8}
+						className="cursor-progress font-bold text-sky-800 select-none"
 					>
-						<div className="flex gap-2 items-center font-bold text-green-50 px-4 py-2">
-							<Spinner size={24} />{" "}
-							{isUploading ? "Đang ghim ảnh..." : "Đang lưu kỉ niệm..."}
+						<div className="flex gap-2 items-center px-4 py-2">
+							<Spinner size={24} /> Đang lưu kỉ niệm...
 						</div>
 					</RoughBox>
 				) : (
@@ -227,7 +163,7 @@ export default function CreateMomentPage() {
 						<Button
 							type="submit"
 							form="moment-form"
-							formAction={(formData) => handleSubmit(formData, true)}
+							formAction={() => handleSubmit(true)}
 							formNoValidate
 							disabled={!canDraft}
 							fill="var(--color-yellow-300)"
@@ -331,7 +267,7 @@ export default function CreateMomentPage() {
 
 			<BinderPaper className="w-full max-w-5xl space-y-4 px-2 h-[80%] z-0">
 				<form
-					action={(formData: FormData) => handleSubmit(formData, false)}
+					action={() => handleSubmit(false)}
 					id="moment-form"
 					className={cn(
 						"flex flex-col md:flex-row items-stretch gap-12 h-full",
@@ -439,9 +375,7 @@ export default function CreateMomentPage() {
 						}}
 					>
 						<div className="flex flex-col gap-6 justify-center">
-							{(state?.error || uploadError) && (
-								<ErrorMessageBox>{state?.error || uploadError}</ErrorMessageBox>
-							)}
+							{formError && <ErrorMessageBox>{formError}</ErrorMessageBox>}
 
 							<div className="flex flex-col gap-2">
 								<label htmlFor="title" className="text-lg font-bold">

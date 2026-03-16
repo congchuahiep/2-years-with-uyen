@@ -4,7 +4,8 @@ export function HeroSection({ className }: { className?: string }) {
 	return (
 		<div
 			className={cn(
-				"h-screen bg-white relative shadow-2xl flex items-center justify-center",
+				"h-screen bg-white relative shadow-2xl",
+				"flex items-center justify-center",
 				className,
 			)}
 		>

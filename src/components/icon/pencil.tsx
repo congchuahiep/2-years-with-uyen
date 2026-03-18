@@ -33,15 +33,15 @@ export function PencilIcon({ className, roughConfig = {} }: PencilIconProps) {
 			...parsedConfig,
 		};
 
-		// Đầu nhọn đen (chì): M 47 10 L 53 10 L 50 0 Z
-		const tipNode = rc.path("M 46 15 L 54 15 L 50 0 Z", {
+		// Đầu nhọn đen (chì)
+		const tipNode = rc.path("M 8 15 L 16 15 L 12 0 Z", {
 			...options,
 			fill: "var(--color-slate-800)",
 			fillStyle: "solid",
 		});
 
-		// Gỗ vàng được gọt lộ ra: M 40 35 L 60 35 L 54 15 L 46 15 Z
-		const woodNode = rc.path("M 40 35 L 60 35 L 54 15 L 46 15 Z", {
+		// Gỗ vàng được gọt lộ ra
+		const woodNode = rc.path("M 2 35 L 22 35 L 16 15 L 8 15 Z", {
 			...options,
 			fill: "var(--color-orange-200)",
 			fillStyle: "solid",
@@ -49,28 +49,28 @@ export function PencilIcon({ className, roughConfig = {} }: PencilIconProps) {
 
 		// Đường zig-zac vát gỗ với thân
 		const zigZacNode = rc.path(
-			"M 40 35 L 45 30 L 50 35 L 55 30 L 60 35",
+			"M 2 35 L 7 30 L 12 35 L 17 30 L 22 35",
 			options,
 		);
 
 		// Thân bút chì dài sọc (Lục giác)
-		const bodyNode = rc.path("M 40 35 L 40 120 L 60 120 L 60 35", {
+		const bodyNode = rc.path("M 2 35 L 2 120 L 22 120 L 22 35", {
 			fill: parsedConfig.fill || "var(--color-yellow-500)",
 			fillStyle: "hachure",
 			...options,
 		});
-		const line1 = rc.line(46, 35, 46, 120, options);
-		const line2 = rc.line(54, 35, 54, 120, options);
+		const line1 = rc.line(8, 35, 8, 120, options);
+		const line2 = rc.line(16, 35, 16, 120, options);
 
 		// Kẹp nhôm giữ tẩy
-		const metalNode = rc.path("M 38 120 L 62 120 L 62 130 L 38 130 Z", {
+		const metalNode = rc.path("M 0 120 L 24 120 L 24 130 L 0 130 Z", {
 			...options,
 			fill: "var(--color-gray-300)",
 			fillStyle: "solid",
 		});
 
 		// Cục tẩy đuôi tròn
-		const eraserNode = rc.path("M 38 130 L 62 130 C 62 145, 38 145, 38 130", {
+		const eraserNode = rc.path("M 0 130 L 24 130 C 24 145, 0 145, 0 130", {
 			...options,
 			fill: "var(--color-red-300)",
 			fillStyle: "solid",
@@ -93,7 +93,7 @@ export function PencilIcon({ className, roughConfig = {} }: PencilIconProps) {
 	return (
 		<svg
 			ref={svgRef}
-			viewBox="0 0 100 150"
+			viewBox="0 0 24 150"
 			className={cn(
 				"overflow-visible inline-block transition-opacity duration-300",
 				!isDrawn ? "opacity-0" : "opacity-100",

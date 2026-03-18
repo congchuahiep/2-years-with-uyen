@@ -227,7 +227,7 @@ export default function CreateMomentPage() {
 				roughConfig={{ stroke: "currentColor" }}
 			/>
 			<PencilIcon
-				className="absolute top-64 right-12 h-64 text-slate-800 -rotate-20 drop-shadow-md"
+				className="absolute top-64 right-32 h-64 text-slate-800 -rotate-18 drop-shadow-md"
 				roughConfig={{ fill: "var(--color-yellow-300)", fillStyle: "solid" }}
 			/>
 

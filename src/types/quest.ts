@@ -1,4 +1,5 @@
 export enum QuestID {
+	Intro = "INTRO",
 	CreateFirstMoment = "CREATE_FIRST_MOMENT",
 	PersonalizeProfile = "PERSONALIZE_PROFILE",
 	Collector = "COLLECTOR",
@@ -13,16 +14,22 @@ export interface Quest {
 
 export const ALL_QUESTS: Quest[] = [
 	{
-		id: QuestID.CreateFirstMoment,
-		title: "Viết Kỷ Niệm Đầu Tiên",
-		description: "...",
+		id: QuestID.Intro,
+		title: "MÌNH LÀM QUEN NHÁ!",
+		description: "",
 		dependencies: [],
 	},
 	{
 		id: QuestID.PersonalizeProfile,
-		title: "Cá Nhân Hóa",
+		title: "Cá nhân hoá",
 		description: "...",
-		dependencies: [],
+		dependencies: [QuestID.Intro],
+	},
+	{
+		id: QuestID.CreateFirstMoment,
+		title: "Khoảng khắc đầu tiên!",
+		description: "Viết và tạo một khoảng khắc đầu tiên của bạnnnnn",
+		dependencies: [QuestID.Intro],
 	},
 	{
 		id: QuestID.Collector,

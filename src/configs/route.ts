@@ -6,8 +6,10 @@ export const route = {
 	},
 
 	login: "/login",
+
 	profile: {
 		edit: "/profile/edit",
+		me: "/profile/me",
 		view: (userId: string) => `/profile/${userId}`,
 	},
 };

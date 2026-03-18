@@ -1,32 +1,35 @@
-import { redirect } from "next/navigation";
+"use client";
+
 import { BackButton } from "@/components/back-button";
-import { createClient } from "@/utils/supabase/server";
-import { EditProfileForm } from "./edit-form";
-import { route } from "@/configs/route";
+import { Spinner } from "@/components/ui/spinner";
+import { useUserProfile } from "@/hooks/use-user-profile";
+import cn from "@/utils/cn";
+import EditProfileForm from "./edit-form";
 
-export default async function EditProfilePage() {
-	const supabase = await createClient();
+export default function EditProfilePage() {
+	const { data, isFetching, error } = useUserProfile();
+	const profile = data ? data : null;
 
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
-
-	if (!user) {
-		redirect(route.login);
-	}
-
-	const { data: profile } = await supabase
-		.from("profiles")
-		.select("*")
-		.eq("id", user.id)
-		.single();
+	if (error) throw error;
 
 	return (
 		<main className="min-h-screen flex items-center justify-center p-4">
 			<BackButton />
 
 			<div className="w-full max-w-md">
-				<EditProfileForm profile={profile} />
+				{isFetching ? (
+					<div
+						className={cn(
+							"flex items-center justify-center gap-2",
+							"text-white font-bold text-xl",
+						)}
+					>
+						<Spinner className="size-12" />
+						Loading...
+					</div>
+				) : (
+					<EditProfileForm profile={profile} />
+				)}
 			</div>
 		</main>
 	);

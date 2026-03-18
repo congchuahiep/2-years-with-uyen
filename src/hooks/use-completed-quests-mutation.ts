@@ -2,9 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { QuestID } from "@/types/quest";
 import type { UserProfile } from "@/types/user-profile";
 import { createClient } from "@/utils/supabase/client";
+import { USER_PROFILE_QUERY_KEY } from "@/configs/querykey";
 
 const supabase = createClient();
-const USER_PROFILE_QUERY_KEY = ["user-profile"];
 
 async function updateCompletedQuests(completedQuests: QuestID[]) {
 	const {
@@ -26,11 +26,13 @@ export function useCompletedQuestsMutation() {
 	return useMutation({
 		mutationFn: updateCompletedQuests,
 		onMutate: async (newQuests) => {
-			await queryClient.cancelQueries({ queryKey: USER_PROFILE_QUERY_KEY });
-			const previousProfile = queryClient.getQueryData(USER_PROFILE_QUERY_KEY);
+			await queryClient.cancelQueries({ queryKey: USER_PROFILE_QUERY_KEY.me });
+			const previousProfile = queryClient.getQueryData(
+				USER_PROFILE_QUERY_KEY.me,
+			);
 
 			queryClient.setQueryData(
-				USER_PROFILE_QUERY_KEY,
+				USER_PROFILE_QUERY_KEY.me,
 				(rest: UserProfile[]) => ({
 					...rest,
 					completed_quests: newQuests,
@@ -42,13 +44,13 @@ export function useCompletedQuestsMutation() {
 		// Rollback về state cũ nếu có lỗi
 		onError: (_err, _newQuests, context) => {
 			queryClient.setQueryData(
-				USER_PROFILE_QUERY_KEY,
+				USER_PROFILE_QUERY_KEY.me,
 				context?.previousProfile,
 			);
 		},
 		// Fetch lại data từ server để đảm bảo đồng bộ
 		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEY });
+			queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEY.me });
 		},
 	});
 }

@@ -1,29 +1,36 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useRef } from "react";
 import { AvatarUpload } from "@/components/ui/avatar-upload";
 import { Button } from "@/components/ui/button";
 import { ErrorMessageBox } from "@/components/ui/error-message-box";
 import { Input } from "@/components/ui/input";
 import { RoughBox } from "@/components/ui/rough-box";
+import { Spinner } from "@/components/ui/spinner";
+import {
+	type UpdateProfileVariables,
+	useUpdateProfile,
+} from "@/hooks/use-update-profile";
+import type { UserProfile } from "@/types/user-profile";
 
-type Profile = {
-	id: string;
-	first_name: string | null;
-	last_name: string | null;
-	avatar_url: string | null;
-};
-
-import { type FormState, updateUserProfile } from "./actions";
-
-const initialState: FormState = {
-	error: undefined,
-	success: false,
-};
-
-export function EditProfileForm({ profile }: { profile: Profile | null }) {
-	const [state, formAction] = useActionState(updateUserProfile, initialState);
+function EditProfileForm({ profile }: { profile: UserProfile | null }) {
 	const formRef = useRef<HTMLFormElement>(null);
+
+	const { mutate, isPending, error, isSuccess } = useUpdateProfile();
+
+	const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		const formData = new FormData(event.currentTarget);
+
+		const payload: UpdateProfileVariables = {
+			first_name: formData.get("first_name") as string,
+			last_name: formData.get("last_name") as string,
+			avatarFile: formData.get("avatar") as File | null,
+			current_avatar_url: formData.get("current_avatar_url") as string,
+		};
+
+		mutate(payload);
+	};
 
 	return (
 		<RoughBox
@@ -37,13 +44,13 @@ export function EditProfileForm({ profile }: { profile: Profile | null }) {
 			}}
 			padding={32}
 		>
-			<form ref={formRef} action={formAction} className="space-y-6">
+			<form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
 				<h1 className="text-2xl font-bold text-center text-slate-800 font-display">
 					Chỉnh sửa thông tin
 				</h1>
 
-				{state?.error && <ErrorMessageBox>{state.error}</ErrorMessageBox>}
-				{state?.success && (
+				{error && <ErrorMessageBox>{error.message}</ErrorMessageBox>}
+				{isSuccess && (
 					<div className="p-3 bg-green-100 text-green-800 border border-green-300 rounded-md text-sm">
 						Cập nhật thông tin thành công!
 					</div>
@@ -71,6 +78,7 @@ export function EditProfileForm({ profile }: { profile: Profile | null }) {
 						type="text"
 						defaultValue={profile?.first_name || ""}
 						required
+						disabled={isPending}
 					/>
 				</div>
 
@@ -84,13 +92,16 @@ export function EditProfileForm({ profile }: { profile: Profile | null }) {
 						type="text"
 						defaultValue={profile?.last_name || ""}
 						required
+						disabled={isPending}
 					/>
 				</div>
 
-				<Button type="submit" className="w-full">
-					Lưu thay đổi
+				<Button type="submit" className="w-full" disabled={isPending}>
+					{isPending ? <Spinner size={24} /> : "Lưu thay đổi"}
 				</Button>
 			</form>
 		</RoughBox>
 	);
 }
+
+export default EditProfileForm;

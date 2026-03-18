@@ -48,20 +48,20 @@ export function AvatarUpload({
 				<RoughBox
 					padding={0}
 					roughConfig={{
-						roughness: 1.5,
+						roughness: 2,
 						strokeWidth: 2,
-						// fill: "var(--color-slate-100)",
+						bowing: 0,
 						fillStyle: "solid",
 					}}
 					shape="circle"
-					className="size-full overflow cursor-pointer"
+					className="size-full aspect-square rounded-full cursor-pointer"
 				>
 					{previewUrl ? (
 						<Image
 							src={previewUrl}
 							alt="Avatar preview"
 							fill
-							className="object-cover -z-10 rounded-full"
+							className="object-cover -z-20 rounded-full"
 						/>
 					) : (
 						<div className="w-full h-full flex items-center justify-center text-slate-400">

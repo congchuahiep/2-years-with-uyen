@@ -90,7 +90,7 @@ export const RoughBox: React.FC<RoughBoxProps> = ({
 		<div
 			{...props}
 			className={cn(
-				"relative inline-block w-full transition-opacity duration-300",
+				"relative inline-block w-full transition-opacity duration-300 z-0",
 				!isDrawn ? "opacity-0" : "opacity-100",
 				className,
 			)}

@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
 	type CreateMomentVariables,
 	useCreateMoment,
-} from "@/hooks/use-create-moment-mutation";
+} from "@/hooks/use-create-moment";
 import type { Color } from "@/types/color";
 import type { DeezerTrack } from "@/types/dezzer";
 import type { PolaroidImage } from "@/types/polaroid";

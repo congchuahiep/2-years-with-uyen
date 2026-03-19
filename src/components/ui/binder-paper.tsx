@@ -1,7 +1,7 @@
 import cn from "@/utils/cn";
 
 interface BinderPaperProps extends React.HTMLAttributes<HTMLDivElement> {
-	children: React.ReactNode;
+	children?: React.ReactNode;
 	className?: string;
 }
 
@@ -36,7 +36,7 @@ export function BinderPaper({
 				<div className="absolute left-14 top-0 bottom-0 w-0.5 bg-red-400 z-0" />
 				<div className="absolute left-15 top-0 bottom-0 w-0.5 bg-red-400 z-0" />
 			</div>
-			<div className="md:pl-16 sm:pl-14 pl-14 p-4 h-full absolute inset-0">
+			<div className="md:pl-19 p-4 pt-4.5 h-full absolute inset-0">
 				{children}
 			</div>
 		</div>

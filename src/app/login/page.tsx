@@ -92,7 +92,8 @@ export default function LoginPage() {
 							</>
 						) : (
 							<>
-								<LockIcon className="mb-1" strokeWidth="4" /> Mở khoá
+								<LockIcon className="mb-1" roughConfig={{ strokeWidth: 2 }} />{" "}
+								Mở khoá
 							</>
 						)}
 					</Button>

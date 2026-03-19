@@ -62,6 +62,7 @@ export function ModalMomentDetailView({
 			}
 		};
 	}, [isFetchTrackSuccess, trackData]);
+
 	const handleClose = () => {
 		setIsModalVisible(false);
 		setTimeout(() => router.back(), 300);

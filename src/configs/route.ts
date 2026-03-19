@@ -12,4 +12,6 @@ export const route = {
 		me: "/profile/me",
 		view: (userId: string) => `/profile/${userId}`,
 	},
+
+	quest: "quest",
 };

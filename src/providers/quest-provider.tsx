@@ -1,8 +1,9 @@
-// src/providers/quest-provider.tsx
 "use client";
 
 import { createContext, type ReactNode, useEffect, useState } from "react";
-import { useCompletedQuestsMutation } from "@/hooks/use-completed-quests-mutation";
+import { DevOnly } from "@/components/dev/dev-only";
+import { QuestDevPanel } from "@/components/dev/quest-dev-panel";
+import { useUpdateCompletedQuests } from "@/hooks/use-update-completed-quests";
 import { createQuestStore, type QuestStoreApi } from "@/stores/quest-store";
 import { createClient } from "@/utils/supabase/client";
 
@@ -11,12 +12,10 @@ export const QuestStoreContext = createContext<QuestStoreApi | undefined>(
 );
 
 export function QuestProvider({ children }: { children: ReactNode }) {
-	const mutation = useCompletedQuestsMutation();
+	const mutation = useUpdateCompletedQuests();
 	const [store] = useState(() =>
 		createQuestStore({
-			onCompleteQuest: (allCompleted) => {
-				mutation.mutate(allCompleted);
-			},
+			onUpdateCompletedQuests: (allCompleted) => mutation.mutate(allCompleted),
 		}),
 	);
 
@@ -47,6 +46,10 @@ export function QuestProvider({ children }: { children: ReactNode }) {
 	return (
 		<QuestStoreContext.Provider value={store}>
 			{children}
+
+			<DevOnly>
+				<QuestDevPanel />
+			</DevOnly>
 		</QuestStoreContext.Provider>
 	);
 }

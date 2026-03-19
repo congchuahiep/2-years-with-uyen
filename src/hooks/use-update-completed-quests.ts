@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { USER_PROFILE_QUERY_KEY } from "@/configs/querykey";
 import type { QuestID } from "@/types/quest";
 import type { UserProfile } from "@/types/user-profile";
 import { createClient } from "@/utils/supabase/client";
-import { USER_PROFILE_QUERY_KEY } from "@/configs/querykey";
 
 const supabase = createClient();
 
@@ -20,7 +20,7 @@ async function updateCompletedQuests(completedQuests: QuestID[]) {
 	if (error) throw error;
 }
 
-export function useCompletedQuestsMutation() {
+export function useUpdateCompletedQuests() {
 	const queryClient = useQueryClient();
 
 	return useMutation({

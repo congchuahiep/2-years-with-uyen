@@ -4,7 +4,7 @@ import { BackButton } from "@/components/back-button";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import cn from "@/utils/cn";
-import EditProfileForm from "./edit-form";
+import EditProfileView from "./view";
 
 export default function EditProfilePage() {
 	const { data, isFetching, error } = useUserProfile();
@@ -28,7 +28,7 @@ export default function EditProfilePage() {
 						Loading...
 					</div>
 				) : (
-					<EditProfileForm profile={profile} />
+					<EditProfileView profile={profile} />
 				)}
 			</div>
 		</main>

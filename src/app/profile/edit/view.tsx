@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { AvatarUpload } from "@/components/ui/avatar-upload";
 import { Button } from "@/components/ui/button";
 import { ErrorMessageBox } from "@/components/ui/error-message-box";
@@ -12,11 +12,16 @@ import {
 	useUpdateProfile,
 } from "@/hooks/use-update-profile";
 import type { UserProfile } from "@/types/user-profile";
+import { useQuestStore } from "@/hooks/use-quest-store";
+import { QuestID } from "@/types/quest";
 
-function EditProfileForm({ profile }: { profile: UserProfile | null }) {
+function EditProfileView({ profile }: { profile: UserProfile | null }) {
 	const formRef = useRef<HTMLFormElement>(null);
+	const completeQuest = useQuestStore((s) => s.completeQuest);
 
-	const { mutate, isPending, error, isSuccess } = useUpdateProfile();
+	const { mutate, isPending, error, isSuccess } = useUpdateProfile({
+		onSuccess: () => completeQuest(QuestID.PersonalizeProfile),
+	});
 
 	const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -104,4 +109,4 @@ function EditProfileForm({ profile }: { profile: UserProfile | null }) {
 	);
 }
 
-export default EditProfileForm;
+export default EditProfileView;

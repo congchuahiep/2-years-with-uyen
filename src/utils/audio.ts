@@ -5,6 +5,9 @@ const sounds = {
 	disabled: "/sounds/button-error.mp3",
 	pop: "/sounds/pop.mp3",
 	toggle: "/sounds/toggle.mp3",
+	yay: "/sounds/yay.mp3",
+	chestOpen: "/sounds/chest-open.mp3",
+	chestClose: "/sounds/chest-close.mp3",
 } as const;
 
 type SoundType = keyof typeof sounds;

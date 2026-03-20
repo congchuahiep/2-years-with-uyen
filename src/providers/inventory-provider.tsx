@@ -1,22 +1,26 @@
 "use client";
 
-import { createContext, type ReactNode, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { DevOnly } from "@/components/dev/dev-only";
-import { QuestDevPanel } from "@/components/dev/quest-dev-panel";
+import { InventoryDevPanel } from "@/components/dev/inventory-dev-panel";
 import { Spinner } from "@/components/ui/spinner";
-import { useUpdateCompletedQuests } from "@/hooks/use-update-completed-quests";
-import { createQuestStore, type QuestStoreApi } from "@/stores/quest-store";
+import { useUpdateInventory } from "@/hooks/use-update-inventory";
+import {
+	createInventoryStore,
+	type InventoryStoreApi,
+} from "@/stores/inventory-store";
 import { createClient } from "@/utils/supabase/client";
 
-export const QuestStoreContext = createContext<QuestStoreApi | undefined>(
-	undefined,
-);
+export const InventoryStoreContext = createContext<
+	InventoryStoreApi | undefined
+>(undefined);
 
-export function QuestProvider({ children }: { children: ReactNode }) {
-	const mutation = useUpdateCompletedQuests();
+export function InventoryProvider({ children }: { children: React.ReactNode }) {
+	const mutation = useUpdateInventory();
 	const [store] = useState(() =>
-		createQuestStore({
-			onUpdateCompletedQuests: (allCompleted) => mutation.mutate(allCompleted),
+		createInventoryStore({
+			onUpdateInventoryItems: (inventoryItemIds) =>
+				mutation.mutate(inventoryItemIds),
 		}),
 	);
 	const [isLoading, setIsLoading] = useState(true);
@@ -30,12 +34,12 @@ export function QuestProvider({ children }: { children: ReactNode }) {
 			if (user) {
 				const { data: profile } = await supabase
 					.from("profiles")
-					.select("completed_quests")
+					.select("inventory")
 					.eq("id", user.id)
 					.single();
 
 				// Khởi tạo trạng thái store với dữ liệu từ DB
-				store.getState().initialize(profile?.completed_quests || []);
+				store.getState().initialize(profile?.inventory || []);
 			} else {
 				// Nếu không có user, khởi tạo với mảng rỗng
 				store.getState().initialize([]);
@@ -54,12 +58,12 @@ export function QuestProvider({ children }: { children: ReactNode }) {
 		);
 
 	return (
-		<QuestStoreContext.Provider value={store}>
+		<InventoryStoreContext.Provider value={store}>
 			{children}
 
 			<DevOnly>
-				<QuestDevPanel />
+				<InventoryDevPanel />
 			</DevOnly>
-		</QuestStoreContext.Provider>
+		</InventoryStoreContext.Provider>
 	);
 }

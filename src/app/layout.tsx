@@ -6,6 +6,7 @@ import { AudioPreloaderProvider } from "@/providers/audio-preloader-provider";
 import { ModalContentWrapper, ModalProvider } from "@/providers/modal-provider";
 import QueryProvider from "@/providers/query-provider";
 import { QuestProvider } from "@/providers/quest-provider";
+import { InventoryProvider } from "@/providers/inventory-provider";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -24,15 +25,17 @@ export default function RootLayout({
 			<body className={`antialiased bg-purple-400 overflow-hidden`}>
 				<QueryProvider>
 					<QuestProvider>
-						<AudioPreloaderProvider>
-							<ModalProvider>
-								<ModalContentWrapper>
-									<MuteButton className="fixed bottom-4 left-4 z-50" />
-									{children}
-								</ModalContentWrapper>
-								{modal}
-							</ModalProvider>
-						</AudioPreloaderProvider>
+						<InventoryProvider>
+							<AudioPreloaderProvider>
+								<ModalProvider>
+									<ModalContentWrapper>
+										<MuteButton className="fixed bottom-4 left-4 z-50" />
+										{children}
+									</ModalContentWrapper>
+									{modal}
+								</ModalProvider>
+							</AudioPreloaderProvider>
+						</InventoryProvider>
 					</QuestProvider>
 				</QueryProvider>
 			</body>

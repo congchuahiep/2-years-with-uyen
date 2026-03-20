@@ -1,7 +1,13 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import {
+	useEffect,
+	useRef,
+	useState,
+	forwardRef,
+	useImperativeHandle,
+} from "react";
 import rough from "roughjs";
 import type { Options } from "roughjs/bin/core";
 import type { FillStyle } from "@/types/rough";
@@ -10,108 +16,125 @@ import cn from "@/utils/cn";
 interface RoughBoxProps extends React.HTMLAttributes<HTMLDivElement> {
 	children?: React.ReactNode;
 	className?: string;
+	backgroundClassName?: string;
+	containerClassName?: string;
 	roughConfig?: Options & { fillStyle?: FillStyle };
 	padding?: number;
 	shape?: "rectangle" | "circle";
 	style?: React.CSSProperties;
 }
 
-export const RoughBox: React.FC<RoughBoxProps> = ({
-	children,
-	className,
-	roughConfig = {},
-	padding = 20,
-	shape = "rectangle",
-	style,
-	...props
-}) => {
-	const [isDrawn, setIsDrawn] = useState(false);
+// Sử dụng forwardRef để nhận ref từ bên ngoài
+export const RoughBox = forwardRef<HTMLDivElement, RoughBoxProps>(
+	(
+		{
+			children,
+			className,
+			backgroundClassName,
+			containerClassName,
+			roughConfig = {},
+			padding = 20,
+			shape = "rectangle",
+			style,
+			...props
+		},
+		ref,
+	) => {
+		const [isDrawn, setIsDrawn] = useState(false);
+		const svgRef = useRef<SVGSVGElement>(null);
 
-	const svgRef = useRef<SVGSVGElement>(null);
-	const containerRef = useRef<HTMLDivElement>(null);
-	const [size, setSize] = useState({ width: 0, height: 0 });
+		// Ref nội bộ dùng để đo kích thước và thực hiện logic vẽ
+		const internalRef = useRef<HTMLDivElement>(null);
+		const [size, setSize] = useState({ width: 0, height: 0 });
 
-	useEffect(() => {
-		if (!containerRef.current) return;
+		// Đồng bộ ref bên ngoài với internalRef
+		useImperativeHandle(ref, () => internalRef.current!);
 
-		const updateSize = () => {
-			if (containerRef.current) {
-				const { offsetWidth, offsetHeight } = containerRef.current;
-				setSize({ width: offsetWidth, height: offsetHeight });
+		useEffect(() => {
+			if (!internalRef.current) return;
+
+			const updateSize = () => {
+				if (internalRef.current) {
+					const { offsetWidth, offsetHeight } = internalRef.current;
+					setSize({ width: offsetWidth, height: offsetHeight });
+				}
+			};
+
+			const resizeObserver = new ResizeObserver(updateSize);
+			resizeObserver.observe(internalRef.current);
+
+			updateSize();
+			return () => resizeObserver.disconnect();
+		}, []);
+
+		const configStr = JSON.stringify(roughConfig);
+
+		useEffect(() => {
+			if (!svgRef.current || size.width === 0 || size.height === 0) return;
+
+			while (svgRef.current.firstChild) {
+				svgRef.current.removeChild(svgRef.current.firstChild);
 			}
-		};
 
-		// Sử dụng ResizeObserver để lắng nghe thay đổi kích thước của nội dung
-		const resizeObserver = new ResizeObserver(updateSize);
-		resizeObserver.observe(containerRef.current);
+			const parsedConfig = JSON.parse(configStr);
+			const rc = rough.svg(svgRef.current);
 
-		updateSize();
-		return () => resizeObserver.disconnect();
-	}, []);
+			const options = {
+				roughness: 1.5,
+				strokeWidth: 2,
+				fillStyle: "solid",
+				...parsedConfig,
+			};
 
-	const configStr = JSON.stringify(roughConfig);
+			const node =
+				shape === "circle"
+					? rc.ellipse(
+							size.width / 2,
+							size.height / 2,
+							size.width - 4,
+							size.height - 4,
+							options,
+						)
+					: rc.rectangle(2, 2, size.width - 4, size.height - 4, options);
 
-	useEffect(() => {
-		if (!svgRef.current || size.width === 0 || size.height === 0) return;
+			svgRef.current.appendChild(node);
 
-		while (svgRef.current.firstChild) {
-			svgRef.current.removeChild(svgRef.current.firstChild);
-		}
+			if (!isDrawn) {
+				requestAnimationFrame(() => setIsDrawn(true));
+			}
+		}, [size.width, size.height, configStr, isDrawn, shape]);
 
-		const parsedConfig = JSON.parse(configStr);
-		const rc = rough.svg(svgRef.current);
-
-		const options = {
-			roughness: 1.5,
-			strokeWidth: 2,
-			fillStyle: "solid",
-			...parsedConfig,
-		};
-
-		const node =
-			shape === "circle"
-				? rc.ellipse(
-						size.width / 2,
-						size.height / 2,
-						size.width - 4,
-						size.height - 4,
-						options,
-					)
-				: rc.rectangle(2, 2, size.width - 4, size.height - 4, options);
-
-		svgRef.current.appendChild(node);
-
-		if (!isDrawn) {
-			requestAnimationFrame(() => setIsDrawn(true));
-		}
-	}, [size.width, size.height, configStr, isDrawn, shape]);
-
-	return (
-		<div
-			{...props}
-			className={cn(
-				"relative inline-block w-full transition-opacity duration-300 z-0",
-				!isDrawn ? "opacity-0" : "opacity-100",
-				className,
-			)}
-			style={style}
-		>
-			{/* Lớp SVG nền bên dưới */}
-			<svg
-				ref={svgRef}
-				width={size.width}
-				height={size.height}
-				className="absolute top-0 left-0 pointer-events-none -z-10 overflow-visible"
-			/>
-
-			{/* Nội dung bên trên */}
+		return (
 			<div
-				ref={containerRef}
-				style={{ padding: `${padding}px` }}
-				className="size-full"
+				{...props}
+				ref={internalRef} // Gán ref nội bộ vào đây
+				className={cn(
+					"relative inline-block w-full transition-opacity duration-300 z-0",
+					!isDrawn ? "opacity-0" : "opacity-100",
+					className,
+				)}
+				style={style}
 			>
-				{children}
+				<svg
+					ref={svgRef}
+					width={size.width}
+					height={size.height}
+					className={cn(
+						"absolute top-0 left-0 pointer-events-none -z-10 overflow-visible",
+						backgroundClassName,
+					)}
+				/>
+
+				<div
+					style={{ padding: `${padding}px` }}
+					className={cn("size-full", containerClassName)}
+				>
+					{children}
+				</div>
 			</div>
-		</div>
-	);
-};
+		);
+	},
+);
+
+// Đặt tên hiển thị cho component (tốt cho debugging)
+RoughBox.displayName = "RoughBox";

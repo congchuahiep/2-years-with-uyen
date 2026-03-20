@@ -36,6 +36,8 @@ import type { DeezerTrack } from "@/types/dezzer";
 import type { PolaroidImage } from "@/types/polaroid";
 import cn from "@/utils/cn";
 import { getColor } from "@/utils/color";
+import { QuestGuard } from "@/components/quest-guard";
+import { QuestID } from "@/types/quest";
 
 const MARKER_DECORATIONS = [
 	{
@@ -186,16 +188,18 @@ export default function CreateMomentPage() {
 				)}
 			</div>
 
-			<button
-				type="button"
-				onClick={() => setIsTrackModalVisible(true)}
-				className={cn(
-					"absolute -bottom-16 left-8 cursor-pointer z-20 rotate-12",
-					"drop-shadow-md hover:drop-shadow-highlight",
-				)}
-			>
-				<Turntable playingTrack={selectedTrack} className="w-100 h-auto" />
-			</button>
+			<QuestGuard requiredQuests={QuestID.FindTheMusicBox}>
+				<button
+					type="button"
+					onClick={() => setIsTrackModalVisible(true)}
+					className={cn(
+						"absolute -bottom-16 left-8 cursor-pointer z-20 rotate-12",
+						"drop-shadow-md hover:drop-shadow-highlight",
+					)}
+				>
+					<Turntable playingTrack={selectedTrack} className="w-100 h-auto" />
+				</button>
+			</QuestGuard>
 
 			{MARKER_DECORATIONS.map((marker, index) => (
 				<MarkerIcon

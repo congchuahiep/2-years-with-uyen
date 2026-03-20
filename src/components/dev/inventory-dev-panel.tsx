@@ -1,28 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { useQuestStore } from "@/hooks/use-quest-store";
-import { ALL_QUESTS, type QuestID } from "@/types/quest";
+import { useInventoryStore } from "@/hooks/use-inventory-store";
+import { ALL_INVENTORY_ITEMS, type InventoryItemID } from "@/types/inventory";
 import cn from "@/utils/cn";
 import { Button } from "../ui/button";
 
-export function QuestDevPanel() {
+export function InventoryDevPanel() {
 	const [isOpen, setIsOpen] = useState(false);
 
-	const isCompleted = useQuestStore((s) => s.isCompleted);
-	const completeQuest = useQuestStore((s) => s.completeQuest);
-	const uncompleteQuest = useQuestStore((s) => s.uncompleteQuest);
+	const inventory = useInventoryStore((s) => s.inventory);
+	const addItem = useInventoryStore((s) => s.addItem);
+	const removeItem = useInventoryStore((s) => s.removeItem);
 
-	const handleToggle = (questId: QuestID) => {
-		if (isCompleted(questId)) {
-			uncompleteQuest(questId);
+	const handleToggle = (itemId: InventoryItemID) => {
+		if (inventory.has(itemId)) {
+			removeItem(itemId);
 		} else {
-			completeQuest(questId);
+			addItem(itemId);
 		}
 	};
 
 	return (
-		<div className="fixed bottom-24 left-4 z-999 flex flex-col items-end gap-2">
+		<div className="fixed bottom-42 left-4 z-999 flex flex-col items-end gap-2">
 			<Button
 				onClick={() => setIsOpen(!isOpen)}
 				className="size-12 text-white rounded-full shadow-lg flex items-center justify-center text-2xl"
@@ -42,18 +42,18 @@ export function QuestDevPanel() {
 				>
 					<h3 className="font-bold mb-2">Quest DevTool</h3>
 					<div className="flex flex-col gap-2 text-sm">
-						{ALL_QUESTS.map((quest) => (
+						{ALL_INVENTORY_ITEMS.map((item) => (
 							<label
-								key={quest.id}
+								key={item.id}
 								className="flex items-center gap-2 cursor-pointer"
 							>
 								<input
 									type="checkbox"
 									className="size-4"
-									checked={isCompleted(quest.id)}
-									onChange={() => handleToggle(quest.id)}
+									checked={inventory.has(item.id)}
+									onChange={() => handleToggle(item.id)}
 								/>
-								{quest.title}
+								{item.name}
 							</label>
 						))}
 					</div>

@@ -57,8 +57,8 @@ export function ArrowIcon({
 			case "thick":
 				// Mũi tên dày (Khối đặc vẽ path vòng tròn - có thể Fill tô màu) mũi chỉ phải
 				node = rc.path("M 2 8 L 12 8 L 12 4 L 22 12 L 12 20 L 12 16 L 2 16 Z", {
-					...options,
 					fillStyle: "zigzag", // Phù hợp nếu người dùng pass `fill` vào roughConfig
+					...options,
 				});
 				break;
 			default:

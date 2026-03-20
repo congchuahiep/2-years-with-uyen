@@ -10,11 +10,10 @@ export function HeroSection({ className }: { className?: string }) {
 			)}
 		>
 			<div className="text-center">
-				<h1 className="text-4xl font-bold text-gray-800">
-					Welcome to Our Scrapbook
-				</h1>
+				<h1 className="text-4xl font-bold text-gray-800">U + H</h1>
 				<p className="mt-4 text-lg text-gray-600">
-					A collection of our moments, two years and counting.
+					Một bộ sưu tập các &quot;khoảng khắc&quot; của đôi ta. Hai năm và đang
+					viết tiếp!
 				</p>
 			</div>
 		</div>

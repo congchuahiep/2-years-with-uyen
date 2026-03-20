@@ -1,3 +1,4 @@
+import type { InventoryItemID } from "./inventory";
 import type { QuestID } from "./quest";
 
 export type UserProfile = {
@@ -6,4 +7,5 @@ export type UserProfile = {
 	last_name?: string;
 	avatar_url?: string;
 	completed_quests: QuestID[];
+	inventory: InventoryItemID[];
 };

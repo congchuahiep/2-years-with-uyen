@@ -35,8 +35,5 @@
 - `src/utils/supabase`: Chứa các cấu hình client, server và proxy cho Supabase.
 - `src/configs/env.ts`: Quản lý biến môi trường tập trung.
 
-## 🚀 Các tính năng dự kiến
-1. **Shared Photo Diary**: Một bảng tin dạng Locket để hai người đăng ảnh và caption cho nhau.
-2. **Interactive Timeline**: Bản đồ hành trình kỷ niệm theo thời gian.
-3. **Couple Quiz**: Trò chơi nhỏ về độ hiểu nhau của cặp đôi.
-4. **Jar of Love**: Hũ chứa các mẩu giấy nhắn gửi yêu thương mỗi ngày.
+# Document
+Mọi thông tin thêm của dự án được liệt kê trong thư mục [docs](docs/)

@@ -4,7 +4,7 @@ Khu vực này để mô tả tóm tắt và liệt kê chi tiết của tất c
 
 ## Hệ thống Bảo mật chung (Authentication)
 Đặc thù của dự án dành cho cá nhân và đặc trưng, không hoạt động như một Mạng Xã Hội mở.
-- **Mật Khẩu Chung (Passcode):** Đăng nhập ứng dụng bằng việc Nhập đúng 1 loại Mật Mã Tình Yêu đã được định trước thay vì Tạo tài khoản email.
+- **Đăng nhập Email/Password:** Xác thực qua Supabase Auth với các tài khoản (Email/Password) được cấu hình sẵn (`src/app/login/actions.ts` dùng `signInWithPassword`). Người dùng chưa đăng nhập sẽ bị `src/proxy.ts` chuyển hướng về `/login`.
 
 ## 1. Tạo và Chỉnh sửa Kỉ Niệm (Moments)
 Tính năng Cốt lõi lưu giữ câu chuyện thông qua Việc viết Nhật Ký (Journaling). Chức năng Create Moments là Trọng Tâm ứng dụng.

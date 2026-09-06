@@ -12,7 +12,13 @@ Tài liệu này mô tả chi tiết các công nghệ được sử dụng đ�
 ## Styling (Cách điểm trang)
 - **Tailwind CSS**: Framework CSS tiện ích (utility-first) cung cấp toàn bộ các classes tạo kiểu ngay tại code HTML/JSX của thành phần đó mà không cần đến các tệp `.css` thông thường.
 - **CSS Variables**: Tự do thiết lập hệ thống màu sắc qua biến CSS trong file global (từ đặc phái `globals.css`) chủ yếu cho màu sắc "Doodle".
-- **Framer Motion**: Sử dụng cho Animations, cụ thể là để xử lý việc di chuyển các bức ảnh trên Bảng Polaroid Board một cách mượt mà (Spring animation drag, drop, rotate).
+- **Motion (Framer Motion v12)**: Sử dụng cho Animations qua package `motion` (import từ `motion/react`), cụ thể là để xử lý việc di chuyển các bức ảnh trên Bảng Polaroid Board một cách mượt mà (Spring animation drag, drop, rotate).
+
+## State, Data và Tương tác
+- **Zustand**: Quản lý state toàn cục cho Quest và Inventory (`src/stores/`).
+- **TanStack Query**: Fetch/cache dữ liệu phía client (`QueryProvider` ở `src/providers/query-provider.tsx`).
+- **@dnd-kit**: Kéo-thả cho trò chơi ghép hình (`src/components/puzzle-game.tsx`).
+- **@floating-ui/react**: Tooltip (hover) và modal nổi.
 
 ## Cơ sở dữ liệu (Database và BaaS)
 - **Supabase**: Hệ thống lưu trữ phụ trợ hoàn thiện Backend (BaaS) dựa trên nền tảng PostgreSQL hoạt động tốt cùng kiến trúc Next.js.

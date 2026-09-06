@@ -19,6 +19,6 @@ Thay vào đó, nó thường xuyên áp dụng:
 
 ## Chuyển động và Tương tác
 - **Kiểu tương tác (Hover/Active)**: Thay vì thay đổi độ mờ của các đối tượng chủ đạo như hiện tượng Fade-in thường thấy, khi con trỏ chuột bay đến sẽ sinh ra hiệu ứng zoom hoặc xoay nhẹ tự nhiên và sống động (Wiggle effect) khoảng một đến hai góc độ. Wiggle hoặc Spring để tạo sự rung rinh thật nhất để đánh vào hiệu ứng giấy tự nhiên.
-- **Micro-Animations**: Các chi tiết thao tác kéo/thả ảnh tại Polaroid Board dùng logic Vật lý thông qua Framer Motion sẽ dễ dàng biểu đạt được các sức nặng quán tính thay vì chỉ bay cứng nhắc sang chỗ khác.
+- **Micro-Animations**: Các chi tiết thao tác kéo/thả ảnh tại Polaroid Board dùng logic Vật lý thông qua Motion (package `motion`, import từ `motion/react`) sẽ dễ dàng biểu đạt được các sức nặng quán tính thay vì chỉ bay cứng nhắc sang chỗ khác.
 
 Bất kỳ tính năng giao diện mới nào được thêm vào dự án đều nên duyệt và đảm bảo tính đồng nhất với 4 tiểu mục phong cách này nhằm gìn giữ sự thơ mộng, nhẹ nhàng sẵn có của sản phẩm.

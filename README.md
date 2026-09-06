@@ -10,7 +10,7 @@ Mục tiêu chính của dự án là xây dựng một không gian riêng tư, 
 
 ## Hệ thống Tài liệu Dự án (Documentation)
 
-Để dễ dàng hơn trong việc tiếp cận mã nguồn cho các lập trình viên (hoặc hệ thống thông minh sau này), toàn bộ kiến thức và quy tắc thể hiện của dự án được hệ thống hóa tại thư mục [docs](docs/). Để bắt đầu phát triển hoặc tìm hiểu,
+Để dễ dàng hơn trong việc tiếp cận mã nguồn cho các lập trình viên (hoặc hệ thống thông minh sau này), toàn bộ kiến thức và quy tắc thể hiện của dự án được hệ thống hóa tại thư mục [docs](docs/). Hãy đọc các file trong `docs/` trước khi bắt đầu phát triển — đặc biệt là `docs/techstack.md`, `docs/style.md` và `docs/structure.md`.
 
 ## Cài Đặt Và Khởi Chạy
 

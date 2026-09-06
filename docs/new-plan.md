@@ -2,8 +2,6 @@ Xin chào, đây sẽ là phần kế hoạch mới cho dự án
 
 # Ý tưởng cũ
 
----
-
 ### Tổng quan
 
 Trong kế hoạch cũ, dự án thiết kế trang chủ là một trang khá đơn giản [@/app/page.tsx](../src/app/page.tsx). Ban đầu sẽ có một trang lời chào, khi cuộn xuống sẽ bắt đầu lộ diện ra phần nền và sau đó sẽ có 1 đường cong gọi là Timeline, khi người dùng càng cuộn Timeline càng chạy dài ra.
@@ -18,8 +16,6 @@ Hiện tại cách triển khai của dự án trên khá là an toàn, đơn đ
 
 # Ý tưởng mới
 
----
-
 ### Dẫn nhập
 
 Trong hồi nghĩ lễ 30/4 mình đã suy nghĩ rất nhiều về phương án mới để cải thiện lại dự án, khi đó mình nghĩ rằng vốn ứng dụng này là một Scrapbook mà nhỉ? Sao không làm nó như ScrapBook thật nhỉ? Từ đó mà mình nghĩ ra một ý tưởng mới, thay vì view Moment bằng Timeline, sao lại không sử dụng **flip book**.
@@ -30,13 +26,13 @@ Thay vì sử dụng Timeline để hiển thị, ta sẽ sử dụng một Flip
 
 - Bắt đầu từ một trang bìa ngoài cùng, người dùng có thể lật trang tiếp theo bằng thao tác kéo thả để lật, hoặc sử dụng một nút đề điểu khiển lật tiếp
 - Người dùng có thể thấy được hai mặt trang cùng một lúc, mặt trái và mặt phải (trừ trang bìa)
-- Một mặt trang giấy đó ta sẽ gọi là "FlipPage" (để tránh trùng với khái niệm trang trong Next.js) Với hai mặt trang đó ta sẽ gọi là một cặp trang "PairFlipPage" (trừ trang bìa vì chỉ có 1 mặt trang), ở đây ta quy chuẩn đánh số cho dễ ha (trang bìa ngoài cùng: 1; cặp trang đầu: 2, 3; cặp trang thứ hai: 4, 5; ... cứ thế tiếp diễn cho đến bìa cuối). Người dùng có thể nhiều thực thể cặp trang PairFlipPage tuỳ ý họ. (Dưới database ta sẽ chỉ lưu PairFlipPage, vì thực tế PairFlipPage đã là hai FlipPage rồi, việc phân biệt FlipPage này chỉ để giúp cho việc hiển thị mà thôi)
-- Ví dụ với mỗi một mặt trang "FlipPage" có layout là một Grid 2x2, tức là 4 ô vuông, với mỗi một ô này cho phép người dùng gắn MomentItem lên được. Nếu như cả hai mặt trang tức là PairFlipPage hết chỗ, thì người dùng có thể tạo một PairFlipPage mới
-- Ngoài việc di chuyển MomentItem trong một "FlipPage". Người dùng có thể hoàn toàn thay đổi vị trí của "MomentItem" sang một "FlipPage" / "PairFlipPage" khác (điều này khác xa so với sử dụng Timeline để hiển thị, vì người dùng có thể đặt MomentItem bất kỳ ở vị trị nào, tuy nhiên điều đó sẽ làm phá hỏng aesthetic timeline của người dùng đây là trade-off)
-- Người dùng có thể tạo FlipTab, nó sẽ mô phỏng index tab của một cuốn sổ thực sự (Như trong từ điển có mấy cái nhãn A -> Z lồi ra để đánh dấu vị trí nội dung cho dễ nhìn hơn), cho phép người dùng đánh dấu cột mốc kỉ niệm ví dụ 2024, 2025, 2026 và navigate tới trang đó dễ dàng hơn
+- Một mặt trang giấy đó ta sẽ gọi là "FlipPage" (để tránh trùng với khái niệm trang trong Next.js) Với hai mặt trang đó ta sẽ gọi là một cặp trang "PairFlipPage" (trừ trang bìa vì chỉ có 1 mặt trang), ở đây ta quy chuẩn đánh số cho dễ ha _(trang bìa ngoài cùng: 1; cặp trang đầu: 2, 3; cặp trang thứ hai: 4, 5; ... cứ thế tiếp diễn cho đến bìa cuối)_. Người dùng có thể tạo nhiều thực thể cặp trang PairFlipPage tuỳ ý họ. (Dưới database ta sẽ chỉ lưu PairFlipPage, vì thực tế PairFlipPage đã là hai FlipPage rồi, việc phân biệt FlipPage này chỉ để giúp cho việc hiển thị mà thôi)
+- Ở mỗi một mặt trang "FlipPage" có layout là một Grid 2x2, tức là 4 ô vuông, với mỗi một ô này cho phép người dùng gắn MomentItem lên được. Nếu như cả hai mặt trang tức là PairFlipPage hết chỗ, thì người dùng có thể tạo một PairFlipPage mới
+- Người dùng có thể di chuyển một MomentItem trong một "FlipPage". Và Người dùng cũng có thể hoàn toàn thay đổi vị trí của "MomentItem" sang một "FlipPage" / "PairFlipPage" khác (điều này khác xa so với sử dụng Timeline để hiển thị, vì người dùng có thể đặt MomentItem bất kỳ ở vị trị nào, tuy nhiên điều đó sẽ làm phá hỏng aesthetic timeline của người dùng đây là trade-off)
 
-Các tính năng thêm:
+Các tính năng thêm, chưa cần làm ngay:
 
+- Người dùng có thể tạo FlipTab, nó sẽ mô phỏng index tab của một cuốn sổ thực sự _(Như trong từ điển có mấy cái nhãn A -> Z lồi ra để đánh dấu vị trí nội dung cho dễ nhìn hơn)_, cho phép người dùng đánh dấu cột mốc kỉ niệm ví dụ 2024, 2025, 2026 và khi nhấn vào cái tag đó nó sẽ navigate tới trang đó dễ dàng hơn
 - Cho phép gán sticker vào trong một PairFlipPage, sticker này có thể ở bất kỳ vị trí nào trong PairFlipPage mà không làm chiếm dụng layout chứa MomentItem
 - Ngoài MomentItem ra thì ta có thể thêm StickyNote vào trong layout chứa MomentItem, Tức rằng layout của PairFlipPage là dạng grid có thể chứa các Item mà Item đó có thể là MomentItem hoặc StickyNote (mai sau có thể mở rộng thêm để add các item khác nữa)
 
@@ -56,7 +52,7 @@ Mục tiêu: Đảm bảo Supabase sẵn sàng lưu trữ cấu trúc trang sổ
 
 #### Buổi 2: Nghiên cứu & Xây dựng Lõi Flip Book Component (4 tiếng)
 
-Mục tiêu: Tạo ra được cuốn sổ có thể lật trang mượt mà.
+Mục tiêu: Tạo ra được cuốn sổ có thể lật trang mượt mà. Tuy nhiên cái khó là làm sao để có thể tạo Flip Book Component ăn khớp với style của dự án?
 
 1. Đánh giá thư viện: Nghiên cứu sử dụng thư viện chuyên dụng như react-pageflip (wrapper của page-flip) hoặc xây dựng Custom Component bằng Framer Motion (sử dụng 3D transform rotateY). Hoặc tự triển khai bằng Framer Motion để kiểm soát hoàn toàn giao diện. Một số nguồn tham khảo
     - [https://github.com/vuvandinh123/react-flipbook](https://github.com/vuvandinh123/react-flipbook)

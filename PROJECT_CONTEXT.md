@@ -13,13 +13,13 @@
 - **Fonts**: 
   - `Pangolin`: Font chữ viết tay chủ đạo.
   - `Fuzzy Bubbles`: Font chữ bổ trợ cho cảm giác ngộ nghĩnh.
-  - `Google Sans`: Dùng cho các thành phần UI cần sự rõ ràng.
+  - (Cả hai được load bằng `next/font/google` với subset tiếng Việt trong `src/configs/font.ts`.)
 
 ## 🎨 Phong cách nghệ thuật (Art Style)
 - **Concept**: Notebook / Doodle / Hand-drawn (Sổ tay vẽ tay).
 - **Đặc điểm**:
   - Nền giấy nháp ngả vàng với lưới chấm (dot grid) màu tím nhạt.
-  - Các thành phần UI (nút bấm, ô nhập liệu, khung hình) có viền ngoằn ngoèo, không hoàn hảo như được vẽ bằng tay (sử dụng `doodle.css`).
+  - Các thành phần UI (nút bấm, ô nhập liệu, khung hình) có viền ngoằn ngoèo, không hoàn hảo như được vẽ bằng tay — nét vẽ sinh ra từ thư viện **Rough.js** (xem `src/components/ui/rough-box.tsx`, `button.tsx` và các component trong `src/components/icon/`).
   - Hiệu ứng đổ bóng cứng (hard shadow) và các góc bo lớn (`rounded-4xl`).
 
 ## 🔐 Cơ chế hoạt động & Bảo mật
@@ -31,7 +31,8 @@
 
 ## 🧩 Cấu trúc thư mục quan trọng
 - `src/app/login`: Trang đăng nhập phong cách Doodle.
-- `src/styles/doodle.css`: Chứa các định nghĩa border-image cho hiệu ứng vẽ tay.
+- `src/styles/globals.css`: Hệ màu Doodle (CSS variables `oklch`) và theme Tailwind.
+- `src/components/ui/`: Bộ component vẽ tay dùng chung (RoughBox, Button, RoughTag, Polaroid...). Khi tạo component Rough.js mới, hãy dùng skill `rough-component` (`.agents/skills/rough-component/SKILL.md`).
 - `src/utils/supabase`: Chứa các cấu hình client, server và proxy cho Supabase.
 - `src/configs/env.ts`: Quản lý biến môi trường tập trung.
 

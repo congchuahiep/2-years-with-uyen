@@ -20,7 +20,8 @@ export const BookCover = forwardRef<
 			<RoughBox
 				className={cn(
 					"absolute -inset-2 size-[100%+16px]",
-					props.side === "right" ? "left-0" : "right-0",
+					props.side === "right" && "left-0",
+					props.side === "left" && "right-0",
 				)}
 				roughConfig={{
 					roughness: 1,

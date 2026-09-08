@@ -13,12 +13,12 @@ const polaroidVariants = tv({
 		isLandscape: {
 			true: {
 				container: "flex",
-				root: "aspect-4/3 w-60 md:w-75",
+				root: "aspect-4/3 w-75",
 				content: "h-full w-[90%]",
 				caption: "[writing-mode:sideways-lr]",
 			},
 			false: {
-				root: "aspect-3/4 w-40 md:w-55",
+				root: "aspect-3/4 w-55",
         content: "h-[90%] w-full",
 				caption: "-mt-1",
 			},
@@ -35,22 +35,22 @@ const polaroidVariants = tv({
 		{
 			isLandscape: true,
 			size: "xs",
-			class: { root: "w-32 md:w-40" },
+			class: { root: "w-40" },
 		},
 		{
 			isLandscape: false,
 			size: "xs",
-			class: { root: "w-34 md:w-40" },
+			class: { root: "w-40" },
 		},
 		{
 			isLandscape: true,
 			size: "sm",
-			class: { root: "w-54 md:w-64" },
+			class: { root: "w-64" },
 		},
 		{
 			isLandscape: false,
 			size: "sm",
-			class: { root: "w-44 md:w-48" },
+			class: { root: "w-48" },
 		},
 	],
 	defaultVariants: {

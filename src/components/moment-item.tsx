@@ -79,7 +79,7 @@ export function MomentItem({
 						: { right: "30%", transformOrigin: "right center" }),
 				}}
 			>
-				<Polaroid text={moment.title} isMini>
+				<Polaroid text={moment.title} size="xs">
 					{mainImage && (
 						<RoughBox className="size-full">
 							<Image

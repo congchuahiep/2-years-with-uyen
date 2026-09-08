@@ -24,6 +24,8 @@ Trong hồi nghĩ lễ 30/4 mình đã suy nghĩ rất nhiều về phương án
 
 Thay vì sử dụng Timeline để hiển thị, ta sẽ sử dụng một Flip book. Flip book là một component giống như một cuốn sách thật, người dùng có thể lật trang, có hiệu ứng trang giấy thật, khả năng dùng mouse gesture để lật,... Với spec như sau:
 
+> **Route**: FlipBook nằm ở **route riêng** (đề xuất `/book`). Trang chủ Timeline hiện tại **giữ nguyên** cho tới khi FlipBook ổn định — chưa xoá gì (quyết định D1).
+
 - Bắt đầu từ một trang bìa ngoài cùng, người dùng có thể lật trang tiếp theo bằng thao tác kéo thả để lật, hoặc sử dụng một nút đề điểu khiển lật tiếp
 - Người dùng có thể thấy được hai mặt trang cùng một lúc, mặt trái và mặt phải (trừ trang bìa)
 - Một mặt trang giấy đó ta sẽ gọi là "FlipPage" (để tránh trùng với khái niệm trang trong Next.js) Với hai mặt trang đó ta sẽ gọi là một cặp trang "PairFlipPage" (trừ trang bìa vì chỉ có 1 mặt trang), ở đây ta quy chuẩn đánh số cho dễ ha _(trang bìa ngoài cùng: 1; cặp trang đầu: 2, 3; cặp trang thứ hai: 4, 5; ... cứ thế tiếp diễn cho đến bìa cuối)_. Người dùng có thể tạo nhiều thực thể cặp trang PairFlipPage tuỳ ý họ. (Dưới database ta sẽ chỉ lưu PairFlipPage, vì thực tế PairFlipPage đã là hai FlipPage rồi, việc phân biệt FlipPage này chỉ để giúp cho việc hiển thị mà thôi)
@@ -38,42 +40,45 @@ Các tính năng thêm, chưa cần làm ngay:
 
 ### Kế hoạch
 
-#### Buổi 1: Tái cấu trúc Database & Thiết kế Model (4 tiếng)
+#### Tái cấu trúc Database & Thiết kế Model
 
 Mục tiêu: Đảm bảo Supabase sẵn sàng lưu trữ cấu trúc trang sổ mới.
 
 1. Thiết kế Schema mới:
-    - Table `pair_flip_pages`: Lưu thứ tự các cặp trang (page_order), lưu vị trí sticker trong trang bằng JSON (x, y, rotation, scale, color).
+    - Table `pair_flip_pages`: Lưu thứ tự các cặp trang (page_order), lưu vị trí sticker bằng JSON — mỗi sticker gồm `{ type, side: 'left'|'right', x, y, rotation, scale, color }` (sticker gắn theo từng mặt giấy — quyết định C1).
+    - ⚠️ Bìa SAU (và mặt trong bìa trước) giờ cũng chứa Moment (quyết định A3) → cần lưu được `page_items` cho các mặt này. Bìa TRƯỚC là trang đứng yên (không chứa Moment) → không cần lưu. Gợi ý: tạo `pair_flip_pages` đặc biệt với `page_order = 0` (bìa trước) và `page_order = S+1` (bìa cuối), đánh dấu bằng cột `is_cover` (chặn thêm/xoá trang qua API nhưng vẫn cho gắn item) — sẽ chốt chi tiết ở Buổi 3.
     - Table `flip_tabs`: Đánh dấu mục lục (pair_page_id, label, color, position).
-    - Table `page_items`: Bảng đa hình (Polymorphic) chứa vị trí của các item trong trang (pair_page_id, side - left/right, grid_index - 0 đến 3, item_type - 'moment' | 'sticky_note', `item_id`).
+    - Table `page_items`: Bảng đa hình (Polymorphic) chứa vị trí của các item trong trang (pair_page_id, side - left/right, grid_index - 0 đến 3, item_type - 'moment' | 'sticky_note', `item_id`). Thêm ràng buộc `UNIQUE(pair_page_id, side, grid_index)` để mỗi ô chỉ chứa 1 item.
+    - Table `sticky_notes`: Bảng nội dung note để `page_items.item_id` trỏ tới (id, content, color, created_at, ...) — quyết định C2.
 2. Migration Data:
-    - Viết script (hoặc Edge Function) để tự động chuyển đổi các Moment hiện có ở dạng Timeline sang cấu trúc pair_flip_pages (tự động chia 4 Moment vào 1 trang).
+    - Viết script (hoặc Edge Function) để tự động chuyển đổi các Moment hiện có ở dạng Timeline sang cấu trúc pair_flip_pages: sắp xếp theo `event_date` tăng dần, đổ lần lượt 4 Moment vào mặt trái, 4 tiếp theo vào mặt phải, lặp lại cho tới hết (quyết định A2). Moment không có ảnh vẫn được đưa vào ô grid bình thường (quyết định A4).
 3. Tạo API service để kết nối frontend + supabase
 
-#### Buổi 2: Nghiên cứu & Xây dựng Lõi Flip Book Component (4 tiếng)
+#### Nghiên cứu & Xây dựng Lõi Flip Book Component
 
 Mục tiêu: Tạo ra được cuốn sổ có thể lật trang mượt mà. Tuy nhiên cái khó là làm sao để có thể tạo Flip Book Component ăn khớp với style của dự án?
 
-1. Đánh giá thư viện: Nghiên cứu sử dụng thư viện chuyên dụng như react-pageflip (wrapper của page-flip) hoặc xây dựng Custom Component bằng Framer Motion (sử dụng 3D transform rotateY). Hoặc tự triển khai bằng Framer Motion để kiểm soát hoàn toàn giao diện. Một số nguồn tham khảo
+1. Đánh giá thư viện: ✅ **Đã chốt: tự build bằng Framer Motion / Motion (3D transform `rotateY`)** để kiểm soát hoàn toàn giao diện theo style doodle — không dùng react-pageflip (quyết định E1). Một số nguồn tham khảo:
     - [https://github.com/vuvandinh123/react-flipbook](https://github.com/vuvandinh123/react-flipbook)
 2. Xây dựng Scrapbook Component:
     - Khi lật trang nhanh sẽ không bị cắt animation trước đó.
     - Thiết kế cấu trúc DOM: Cover (Bìa), Các PairFlipPage (Trang trong).
+    - Bìa trước / bìa sau là **trang cố định** (UI thuần, không lưu DB): bìa trước chứa lời chào, bìa sau lời kết, không cho thêm/xoá/sửa/chèn (quyết định A3 + B2).
     - Tích hợp gesture (kéo thả vuốt) hoặc nút "Next/Prev" để lật trang.
     - Xử lý logic âm thanh lật giấy (sử dụng use-sound với file tiếng xột xoạt).
 
-#### Buổi 3: Xây dựng Layout Grid 2x2 & Item Renderers (4 tiếng)
+#### Xây dựng Layout Grid 2x2 & Item Renderers
 
 Mục tiêu: Hiển thị nội dung lên mặt trang giấy.
 
 1. Tạo FlipPage Component:
     - Thiết kế giao diện 1 mặt trang với CSS Grid (2 cột x 2 hàng).
-    - Áp dụng phong cách Doodle (Sử dụng doodle.css làm nền giấy, màu giấy cũ ngả vàng).
+    - Áp dụng phong cách Doodle: nền giấy ngả vàng + dot grid theo pattern hiện có (`globals.css` + Rough.js) — không dùng gói doodle.css (quyết định E2).
 2. Xây dựng Item Components:
-    - MomentGridItem: Tái sử dụng Polaroid component hiện tại nhưng điều chỉnh size cho vừa 1 ô grid.
+    - MomentGridItem: Tái sử dụng Polaroid component hiện tại nhưng điều chỉnh size cho vừa 1 ô grid; hiển thị ảnh + tiêu đề giống MomentItem hiện tại (quyết định A4).
     - StickyNoteItem: Tạo component mới hình tờ giấy note nhỏ, viền răng cưa (RoughBox), có font chữ handwriting.
 
-#### Buổi 4: Tích hợp Kéo/Thả (Drag & Drop) Cơ bản (4 tiếng)
+#### Tích hợp Kéo/Thả (Drag & Drop) Cơ bản
 
 Mục tiêu: Cho phép người dùng sắp xếp lại các item.
 
@@ -83,17 +88,19 @@ Mục tiêu: Cho phép người dùng sắp xếp lại các item.
     - Biến các ô Grid thành các Droppable zones.
     - Biến MomentGridItem và StickyNoteItem thành Draggable.
 3. Logic hoán đổi (Swap/Move): Xử lý sự kiện onDragEnd để cập nhật vị trí mới của item (chuyển ô trong cùng 1 trang, hoặc kéo qua trang đối diện nếu đang mở PairFlipPage).
+4. Quản lý trang (quyết định B1, B2): Cho phép **chèn PairFlipPage trống ở bất kỳ vị trí nào** trong sách (renumber `page_order` cho các cặp trang phía sau vị trí chèn) và **xoá PairFlipPage trống**.
 
-#### Buổi 5: Drag & Drop Nâng cao & Hệ thống Sticker (4 tiếng)
+#### Drag & Drop Nâng cao & Hệ thống Sticker
 
 Mục tiêu: Hoàn thiện tính năng tương tác tự do.
 
 1. Chuyển trang khi kéo (Cross-page Dragging): (Phần khó nhất) Xử lý logic khi người dùng cầm 1 tấm ảnh kéo về sát mép màn hình -> Tự động lật sang trang tiếp theo/trước đó.
 2. Lớp Sticker Tự do (Free-float Layer):
-    - Xây dựng một div absolute đè lên trên PairFlipPage.
-    - Cho phép người dùng kéo thả Sticker vào lớp này (lưu tọa độ X, Y tuyệt đối, xoay, scale tương tự Bảng Polaroid cũ).
+    - Xây dựng một div absolute đè lên trên từng mặt trang (FlipPage) của PairFlipPage (quyết định C1).
+    - Cho phép người dùng kéo thả Sticker vào lớp này (lưu tọa độ X, Y tuyệt đối, xoay, scale, màu kèm `side: 'left'|'right'` để biết sticker thuộc mặt nào — **sticker xoay theo mặt giấy khi lật trang**).
+3. Tạo StickyNote (quyết định C2): Bất kỳ người dùng nào cũng được phép tạo StickyNote (nút trong chế độ sửa) — nhập **text + chọn màu**, sau đó gán vào 1 ô trống của Grid (dưới dạng `page_items.item_type = 'sticky_note'`).
 
-#### Buổi 6: FlipTab Navigation & Tích hợp Toolbar (4 tiếng)
+#### FlipTab Navigation & Tích hợp Toolbar
 
 Mục tiêu: Hoàn thiện UI/UX và kết nối với các phần khác của hệ thống.
 
@@ -101,5 +108,26 @@ Mục tiêu: Hoàn thiện UI/UX và kết nối với các phần khác của h
     - Render các thẻ nhãn (tab) thò ra ở cạnh phải/trái của cuốn sổ.
     - Logic bấm vào Tab: Cuốn sổ tự động lật (animate lật nhanh nhiều trang) đến đúng PairFlipPage đó.
 2. Điểu chỉnh lại tool Thêm Moment:
-    - Khi bấm vào nút để điều hướng sang trang Thêm Moment, nó sẽ lật FlipBook đến trang cuối cùng và hiển thị Form Thêm Moment
+    - Khi bấm vào nút Thêm Moment, FlipBook lật tới **PairFlipPage cuối cùng** rồi mở Form. Form Moment **giữ nguyên như hiện tại** (route/modal riêng, không nhúng vào sách — quyết định D3).
+    - Moment mới sau khi lưu sẽ được thêm vào PairFlipPage cuối (quyết định A1).
     - Điều chỉnh lại UI để khớp
+
+---
+
+## ✅ Danh sách quyết định đã chốt
+
+| # | Câu hỏi | Quyết định |
+|---|---|---|
+| A1 | Moment mới đặt ở đâu | Thêm vào **PairFlipPage cuối cùng** (đơn giản cho hiện tại) |
+| A2 | Migration moments cũ | Sắp theo `event_date` tăng dần: 4 Moment → mặt trái, 4 → mặt phải, lặp lại |
+| A3 | Bìa trước/sau | **Bìa TRƯỚC (ngoài cùng) = trang bìa thật sự**: giới thiệu cuốn sổ, đứng yên cô đơn khi sổ đóng — KHÔNG phải trang grid, không chứa Moment. Mọi mặt còn lại (mặt trong bìa trước, các cặp trang, và cả **bìa SAU**) là grid chứa Moment như nhau |
+| A4 | Text-only Moment | Hiển thị Polaroid bình thường + tiêu đề giống MomentItem |
+| B1 | Chèn trang | Cho phép chèn PairFlipPage trống ở **bất kỳ vị trí nào** (renumber `page_order`) |
+| B2 | Xoá trang | Cho phép xoá PairFlipPage trống; **bìa là trang cố định** — không thêm/xoá/sửa/chèn |
+| C1 | Sticker bám mặt nào | (b) — sticker JSON có trường `side: 'left'\|'right'`, sticker **xoay theo mặt giấy** khi lật |
+| C2 | StickyNote | Bất kỳ user nào cũng tạo được; nhập **text + chọn màu**; cần bảng `sticky_notes` riêng |
+| D1 | Trang chủ cũ | **Giữ nguyên**, FlipBook nằm ở route riêng (đề xuất `/book`); xoá khi FlipBook ổn định |
+| D2 | Calendar / Drafts | **Bỏ calendar**; vẫn cần tính năng **draft** |
+| D3 | Form Moment | **Giữ nguyên như hiện tại** (route/modal riêng), không nhúng vào sách |
+| E1 | Engine lật trang | **Dùng thư viện `react-pageflip`** (core `page-flip`) — có sẵn hiệu ứng `user_fold` (góc trang bám theo chuột), bóng đổ động, hỗ trợ mobile. Bỏ hẳn engine tự build (đã thử, cảm giác lật chưa thật) |
+| E2 | doodle.css | Không dùng gói doodle.css; nền giấy dùng pattern hiện có (dotgrid + Rough.js) |

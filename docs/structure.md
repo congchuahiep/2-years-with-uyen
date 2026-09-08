@@ -15,6 +15,7 @@
   - `use-quest-store.ts` / `use-inventory-store.ts`: Bridge Zustand store vào React (quest + inventory).
   - `use-create-moment.ts`, `use-user-profile.ts`, `use-update-profile.ts`, `use-debounce.ts`, `use-content-pagination.ts`: các hook còn lại.
 - `src/stores/`: Zustand stores (`quest-store.ts`, `inventory-store.ts`) dùng `createStore` từ zustand.
+- `src/services/`: API service kết nối frontend ↔ Supabase (vd. `flipbook.ts` — thao tác toàn bộ dữ liệu cuốn sổ lật FlipBook).
 - `src/providers/`: React providers (`QueryProvider`, `QuestProvider`, `InventoryProvider`, `AudioPreloaderProvider`, `ModalProvider`).
 - `src/utils/`: Functions quan trọng trong app nhưng chung (vd. hàm nối class bằng `cn()`, hàm phát Audio khi click, logic tính toán Timeline trong `timeline.ts`).
 - `src/utils/supabase/`: Cấu hình client, server và proxy cho Supabase (thay cho `src/lib/` trước đây).
@@ -23,5 +24,6 @@
 - `docs/`: Chọn tâm để đặt tất cả hệ thống Tài liệu chi tiết về Dự án (Công Nghệ, Kiểm Thử, Dự Định và Nhiều Thứ Khác) để đồng bộ thật chiều sâu giống như file đang đọc.
 - `public/`: Thư mục tài nguyên tĩnh (Assets), nơi chứa hình ảnh gốc tạm hoặc những tệp audio thể hiện Sound Effect chức năng (pop, click, ...).
 - `.agents/skills/`: Bộ skill cho agent (vd. `rough-component` — hướng dẫn tạo component vẽ tay bằng Rough.js đúng chuẩn repo).
+- `supabase/migrations/`: Các migration SQL (schema + backfill của FlipBook).
 
 Cấu trúc trên cần được duy trì nhất quán, bất kì Component mới nào cũng nên tuân theo định hướng này. Mọi thay đổi lớn tới App Router đều cần cập nhật ngay vào tài liệu này.

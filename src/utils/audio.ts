@@ -8,6 +8,8 @@ const sounds = {
 	yay: "/sounds/yay.mp3",
 	chestOpen: "/sounds/chest-open.mp3",
 	chestClose: "/sounds/chest-close.mp3",
+	flip: "/sounds/page-flip.mp3",
+	flap: "/sounds/page-flap.mp3",
 } as const;
 
 type SoundType = keyof typeof sounds;

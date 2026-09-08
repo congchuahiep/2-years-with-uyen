@@ -1,21 +1,84 @@
+import { tv, type VariantProps } from "tailwind-variants";
 import { RoughBox } from "@/components/ui/rough-box";
 import cn from "@/utils/cn";
+
+const polaroidVariants = tv({
+	slots: {
+		root: "shadow-md mix-blend-normal transition-all duration-300 relative",
+		container: "",
+		content: "relative scale-90 size-full",
+		caption: "px-3 font-bold line-clamp-1 text-xs text-foreground",
+	},
+	variants: {
+		isLandscape: {
+			true: {
+				container: "flex",
+				root: "aspect-4/3 w-60 md:w-75",
+				content: "h-full w-[90%]",
+				caption: "[writing-mode:sideways-lr]",
+			},
+			false: {
+				root: "aspect-3/4 w-40 md:w-55",
+        content: "h-[90%] w-full",
+				caption: "-mt-1",
+			},
+		},
+		size: {
+			xs: {
+				caption: "-mt-1",
+			},
+			sm: {},
+			default: {},
+		},
+	},
+	compoundVariants: [
+		{
+			isLandscape: true,
+			size: "xs",
+			class: { root: "w-32 md:w-40" },
+		},
+		{
+			isLandscape: false,
+			size: "xs",
+			class: { root: "w-34 md:w-40" },
+		},
+		{
+			isLandscape: true,
+			size: "sm",
+			class: { root: "w-54 md:w-64" },
+		},
+		{
+			isLandscape: false,
+			size: "sm",
+			class: { root: "w-44 md:w-48" },
+		},
+	],
+	defaultVariants: {
+		isLandscape: false,
+		size: "default",
+	},
+});
 
 export function Polaroid({
 	className,
 	isLandscape = false,
+	size = "default",
 	style,
 	children,
 	text,
-	isMini,
 }: {
-	isMini?: boolean;
+	size?: VariantProps<typeof polaroidVariants>["size"];
 	className?: string;
 	isLandscape?: boolean;
 	style?: React.CSSProperties;
 	text?: string;
 	children?: React.ReactNode;
 }) {
+	const { root, content, caption, container } = polaroidVariants({
+		isLandscape,
+		size,
+	});
+
 	return (
 		<RoughBox
 			padding={0}
@@ -25,35 +88,12 @@ export function Polaroid({
 				fill: "white",
 				fillStyle: "solid",
 			}}
-			className={cn(
-				"shadow-md mix-blend-normal transition-all duration-300 relative",
-				isLandscape
-					? isMini
-						? "w-32 md:w-40 aspect-4/3"
-						: "w-60 md:w-75 aspect-4/3"
-					: isMini
-						? "w-34 md:w-40 aspect-3/4"
-						: "w-40 md:w-55 aspect-3/4",
-				className,
-			)}
+			className={cn(root(), className)}
 			style={style}
+			containerClassName={container()}
 		>
-			<div
-				className={cn(
-					"relative mb-10 scale-90",
-					isLandscape ? "h-full w-[90%]" : "h-[90%] w-full",
-				)}
-			>
-				{children}
-				<div
-					className={cn(
-						"px-1 font-bold line-clamp-1 text-xs",
-						isMini ? "-mt-1" : "",
-					)}
-				>
-					{text}
-				</div>
-			</div>
+			<div className={content()}>{children}</div>
+			<div className={caption()}>{text}</div>
 		</RoughBox>
 	);
 }

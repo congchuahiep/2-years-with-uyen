@@ -83,10 +83,14 @@ function BookGridCell({ item }: { item: BookPageItem | undefined }) {
     moment.images?.find((image) => image.isMain) ?? moment.images?.[0];
 
   return (
-    <Link key={moment.id} href={route.moments.detail(moment.id)} scroll={false}>
+    <Link
+      key={moment.id}
+      href={route.moments.detail(moment.id)}
+      scroll={false}
+    >
       <Polaroid
         text={moment.title}
-        className="rotate-(--moment-rotate)"
+        className="rotate-(--moment-rotate) hover:scale-102 duration-150"
         style={
           {
             "--moment-rotate": `${hashToIntRange(moment.title, -6, 6)}deg`,

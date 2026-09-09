@@ -1,8 +1,8 @@
 "use client";
 
 import { Book } from "@/components/book/book";
+import { PaletteIcon } from "@/components/icon/palette-icon";
 import { ErrorMessageBox } from "@/components/ui/error-message-box";
-import { RoughBox } from "@/components/ui/rough-box";
 import { Spinner } from "@/components/ui/spinner";
 import { useFlipBook } from "@/hooks/use-flipbook";
 
@@ -11,51 +11,48 @@ import { useFlipBook } from "@/hooks/use-flipbook";
  * Dữ liệu được lấy qua hook `useFlipBook` (TanStack Query).
  */
 export default function BookView() {
-	const { data, isLoading, isError, error } = useFlipBook();
+  const { data, status, error } = useFlipBook();
 
-	// Đang tải dữ liệu
-	if (isLoading) {
-		return (
-			<div className="flex flex-col items-center gap-4 text-purple-100 font-bold">
-				<Spinner size={44} />
-				<p>Đang mở sổ...</p>
-			</div>
-		);
-	}
+  // Đang tải dữ liệu
+  if (status === "pending") {
+    return (
+      <div className="flex items-center gap-4 text-purple-100 font-bold">
+        <Spinner size={32} />
+        <p>Đang mở sổ...</p>
+      </div>
+    );
+  }
 
-	// Lỗi tải dữ liệu
-	if (isError) {
-		return (
-			<ErrorMessageBox className="max-w-md">
-				{error?.message ?? "Không thể tải cuốn sổ. Vui lòng thử lại sau."}
-			</ErrorMessageBox>
-		);
-	}
+  // Lỗi tải dữ liệu
+  if (status === "error") {
+    return (
+      <ErrorMessageBox className="max-w-md">
+        {error?.message ?? "Không thể tải cuốn sổ. Vui lòng thử lại sau."}
+      </ErrorMessageBox>
+    );
+  }
 
-	// Sổ chưa có trang nào
-	if (!data || data.pages.length === 0) {
-		return (
-			<RoughBox
-				className="max-w-md text-purple-100 text-center"
-				padding={32}
-				roughConfig={{
-					fill: "var(--color-purple-300)",
-					stroke: "var(--color-purple-100)",
-					strokeWidth: 2,
-					roughness: 1.5,
-				}}
-			>
-				<p className="font-display text-2xl font-bold">Sổ còn trống!</p>
-				<p className="mt-2 text-sm font-semibold opacity-90">
-					Hãy tạo một khoảnh khắc đầu tiên rồi quay lại đây nhé 💕
-				</p>
-			</RoughBox>
-		);
-	}
+  return (
+    <>
+      <div className="flex w-full max-w-5xl flex-col items-center">
+        <Book pages={data.pages} />
+      </div>
+      <Background />{" "}
+    </>
+  );
+}
 
-	return (
-		<div className="flex w-full max-w-5xl flex-col items-center">
-			<Book pages={data.pages} />
-		</div>
-	);
+function Background() {
+  return (
+    <div className="absolute inset-0 size-full">
+      <PaletteIcon
+        className="absolute text-purple-800 size-90 -translate-x-1/2 translate-y-1/2 bottom-18 left-32"
+        roughConfig={{
+          roughness: 0.2,
+          fill: "var(--color-amber-200)",
+          fillStyle: "solid",
+        }}
+      />
+    </div>
+  );
 }

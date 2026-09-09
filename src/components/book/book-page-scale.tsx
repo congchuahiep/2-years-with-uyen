@@ -8,8 +8,8 @@ export const BOOK_PAGE_DESIGN_WIDTH = 520;
 export const BOOK_PAGE_DESIGN_HEIGHT = 650;
 
 interface BookPageScaleProps {
-	children: ReactNode;
-	className?: string;
+  children: ReactNode;
+  className?: string;
 }
 
 /**
@@ -22,63 +22,63 @@ interface BookPageScaleProps {
  * thước thực tế mà ResizeObserver đo được — nội dung co theo tỉ lệ, không bị vỡ.
  */
 export const BookPageScale = forwardRef<HTMLDivElement, BookPageScaleProps>(
-	({ children, className }, ref) => {
-		const outerRef = useRef<HTMLDivElement>(null);
-		const [scale, setScale] = useState(1);
+  ({ children, className }, ref) => {
+    const outerRef = useRef<HTMLDivElement>(null);
+    const [scale, setScale] = useState(1);
 
-		useEffect(() => {
-			const element = outerRef.current;
-			if (!element) return;
+    useEffect(() => {
+      const element = outerRef.current;
+      if (!element) return;
 
-			const updateScale = () => {
-				// Trang ẩn (StPageFlip set display:none) có kích thước 0 — bỏ qua, giữ nguyên scale cũ
-				if (!element.clientWidth || !element.clientHeight) return;
+      const updateScale = () => {
+        // Trang ẩn (StPageFlip set display:none) có kích thước 0 — bỏ qua, giữ nguyên scale cũ
+        if (!element.clientWidth || !element.clientHeight) return;
 
-				const nextScale = Math.min(
-					element.clientWidth / BOOK_PAGE_DESIGN_WIDTH,
-					element.clientHeight / BOOK_PAGE_DESIGN_HEIGHT,
-				);
+        const nextScale = Math.min(
+          element.clientWidth / BOOK_PAGE_DESIGN_WIDTH,
+          element.clientHeight / BOOK_PAGE_DESIGN_HEIGHT,
+        );
 
-				setScale((previous) =>
-					Math.abs(previous - nextScale) < 0.001 ? previous : nextScale,
-				);
-			};
+        setScale((previous) =>
+          Math.abs(previous - nextScale) < 0.001 ? previous : nextScale,
+        );
+      };
 
-			updateScale();
+      updateScale();
 
-			const observer = new ResizeObserver(updateScale);
-			observer.observe(element);
+      const observer = new ResizeObserver(updateScale);
+      observer.observe(element);
 
-			return () => observer.disconnect();
-		}, []);
+      return () => observer.disconnect();
+    }, []);
 
-		return (
-			<div
-				ref={(node) => {
-					outerRef.current = node;
-					if (typeof ref === "function") ref(node);
-					else if (ref) ref.current = node;
-				}}
-				className={cn("relative size-full", className)}
-			>
-				<div
-					className="relative"
-					style={{
-						width: BOOK_PAGE_DESIGN_WIDTH,
-						height: BOOK_PAGE_DESIGN_HEIGHT,
-						transform: `scale(${scale})`,
-						transformOrigin: "top left",
-						backfaceVisibility: "hidden",
-						WebkitBackfaceVisibility: "hidden",
-						transformStyle: "flat",
-						WebkitTransformStyle: "flat",
-					}}
-				>
-					{children}
-				</div>
-			</div>
-		);
-	},
+    return (
+      <div
+        ref={(node) => {
+          outerRef.current = node;
+          if (typeof ref === "function") ref(node);
+          else if (ref) ref.current = node;
+        }}
+        className={cn("relative size-full", className)}
+      >
+        <div
+          className="relative"
+          style={{
+            width: BOOK_PAGE_DESIGN_WIDTH,
+            height: BOOK_PAGE_DESIGN_HEIGHT,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            transformStyle: "flat",
+            WebkitTransformStyle: "flat",
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    );
+  },
 );
 
 BookPageScale.displayName = "BookPageScale";

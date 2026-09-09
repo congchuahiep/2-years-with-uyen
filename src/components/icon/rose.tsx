@@ -37,28 +37,28 @@ export function RoseIcon({ className, roughConfig = {} }: RoseIconProps) {
 		// 1. Lớp cánh ngoài cùng: ellipse rộng, tô hồng đậm
 		const outerPetal = rc.ellipse(12, 8, 14, 10, {
 			...options,
-			fill: "var(--color-pink-400)",
+			fill: "var(--color-rose-400)",
 			fillStyle: "solid",
 			roughness: 0.5,
 		});
 		// 2. Lớp cánh giữa: ellipse nhỏ hơn, hồng nhạt hơn, lệch phải-trên
 		const midPetal = rc.ellipse(13, 7, 9, 7, {
 			...options,
-			fill: "var(--color-pink-300)",
+			fill: "var(--color-rose-300)",
 			fillStyle: "solid",
 			roughness: 0.5,
 		});
 		// 3. Lớp cánh trong: ellipse nhỏ nhất, màu sáng, lệch trái-dưới
 		const innerPetal = rc.ellipse(11.5, 8.5, 5, 4, {
 			...options,
-			fill: "var(--color-pink-200)",
+			fill: "var(--color-rose-200)",
 			fillStyle: "solid",
 			roughness: 0.4,
 		});
 		// 4. Tâm xoắn ốc (highlight nhỏ ở giữa)
 		const center = rc.circle(12, 8, 1.6, {
 			...options,
-			fill: "var(--color-pink-600)",
+			fill: "var(--color-rose-600)",
 			fillStyle: "solid",
 			roughness: 0,
 		});

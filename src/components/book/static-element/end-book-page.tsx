@@ -7,9 +7,12 @@ import { BlankBookPage } from "../blank-book-page";
  * Trang TIN NHẮN CUỐI SÁCH (trang vật lý N+1 — mặt trái của cặp trang
  * trước bìa sau). Là 1 child của `HTMLFlipBook` nên phải forwardRef.
  */
-export const EndBookPage = forwardRef<HTMLDivElement>((_, ref) => {
+export const EndBookPage = forwardRef<
+	HTMLDivElement,
+	{ side?: "left" | "right" }
+>(({ side = "left" }, ref) => {
 	return (
-		<BlankBookPage ref={ref} side="left">
+		<BlankBookPage ref={ref} side={side}>
 			{/* Băng keo washi trang trí */}
 			<div className="absolute top-10 right-10 h-6 w-24 rotate-6 bg-green-300/70 opacity-80" />
 

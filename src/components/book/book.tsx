@@ -14,7 +14,7 @@ import { ArrowIcon } from "@/components/icon/arrow";
 import { Button } from "@/components/ui/button";
 import type { BookPairFlipPage } from "@/types/flipbook";
 import { playSound } from "@/utils/audio";
-import { BlankBookPage } from "./blank-book-page";
+import { PencilIcon } from "../icon/pencil";
 import { BookCover } from "./book-cover";
 import { BookPage } from "./book-page";
 import {
@@ -22,6 +22,7 @@ import {
   BOOK_PAGE_DESIGN_WIDTH,
   BookPageScale,
 } from "./book-page-scale";
+import { BookEditor } from "./editor/book-editor";
 import { EndBookPage } from "./static-element/end-book-page";
 import { FrontBookCover } from "./static-element/front-book-cover";
 import { IntroBookPages } from "./static-element/intro-book-pages";
@@ -143,6 +144,7 @@ export function Book({ pages }: BookProps) {
     null,
   );
   const [currentPage, setCurrentPage] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
   const previousPortrait = useRef(INITIAL_LAYOUT.portrait);
 
   const layout = useBookLayout(containerRef);
@@ -279,6 +281,11 @@ export function Book({ pages }: BookProps) {
           currentPage={currentPage}
           totalPages={pageChildren.length}
         />
+
+        {/* Editor freeform — overlay phủ kín, tự khoá việc lật sách (F7) */}
+        {isEditing && (
+          <BookEditor pages={pages} onClose={() => setIsEditing(false)} />
+        )}
       </div>
 
       {/* Bộ điều khiển */}
@@ -303,6 +310,24 @@ export function Book({ pages }: BookProps) {
         >
           <ArrowIcon variant="thick" className="scale-150" />
         </Button>
+
+        {process.env.NODE_ENV === "development" && (
+          <button
+            type="button"
+            onClick={() => setIsEditing((current) => !current)}
+            className="absolute top-4 right-4 cursor-pointer drop-shadow-highlight"
+          >
+            <PencilIcon
+              className="h-48 -rotate-45"
+              roughConfig={{
+                fill: "var(--color-amber-300)",
+                fillWeight: 3,
+                fillStyle: "zigzag",
+                roughness: 0.8,
+              }}
+            />
+          </button>
+        )}
       </div>
 
       <p className="text-xs font-semibold text-purple-200/70 select-none">
@@ -410,16 +435,6 @@ function buildPages(
     );
   }
 
-  const blankPages: ReactNode[] = [];
-  for (let index = 0; index < 10; index += 1) {
-    const isLeft = index % 2 === 0;
-    blankPages.push(
-      <BookPageScale key={`blank-${index}`}>
-        <BlankBookPage side={faceSide(isLeft ? "left" : "right")} />
-      </BookPageScale>,
-    );
-  }
-
   const showCoverBacks = !layout.portrait;
 
   return [
@@ -435,7 +450,6 @@ function buildPages(
       : []),
     ...IntroBookPages(layout.portrait ? "right" : undefined),
     ...faces,
-    ...blankPages,
     <BookPageScale key="end-message">
       <EndBookPage side={layout.portrait ? "right" : undefined} />
     </BookPageScale>,

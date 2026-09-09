@@ -3,10 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { forwardRef } from "react";
-import { HeartIcon } from "@/components/icon/heart";
 import { route } from "@/configs/route";
 import type { BookPageItem } from "@/types/flipbook";
-import { hashToIntRange } from "@/utils/hash";
+import { resolvePageItemPosition } from "@/types/flipbook";
 import { Polaroid } from "../ui/polaroid";
 import { RoughBox } from "../ui/rough-box";
 import { BlankBookPage } from "./blank-book-page";
@@ -15,31 +14,26 @@ import { BookNumber } from "./static-element/book-number";
 interface BookPageProps {
   /** Mặt của trang: trái hay phải (để vẽ bóng gáy + căn số trang) */
   side: "left" | "right";
-  /** Các item thuộc đúng mặt này, mỗi item mang grid_index 0..3 */
+  /** Các item thuộc đúng mặt này, mỗi item mang vị trí tự do (position, %) */
   items: BookPageItem[];
   /** Số trang vật lý hiển thị nhỏ ở góc (bìa = 1, cặp đầu = 2,3, ...) */
   pageNumber: number;
 }
 
 /**
- * Một MẶT trang (FlipPage) của cuốn sổ — layout Grid 2x2.
+ * Một MẶT trang (FlipPage) của cuốn sổ — layout FREEFORM:
+ * mỗi item nằm ở vị trí % riêng (x, y, rotation, scale, z) như vẽ trên giấy.
  * Component này là 1 child của `HTMLFlipBook` nên phải forwardRef vào div.
  */
 export const BookPage = forwardRef<HTMLDivElement, BookPageProps>(
   ({ side, items, pageNumber }, ref) => {
-    const itemsByGrid = new Map(items.map((item) => [item.grid_index, item]));
-    const slotIndexes = [0, 1, 2, 3];
-
     return (
       <BlankBookPage ref={ref} side={side}>
         <BookNumber pageNumber={pageNumber} side={side} />
 
-        {/* Grid 2x2 chứa các item */}
-        <div className="grid h-full w-full grid-cols-2 grid-rows-2 gap-6 p-8 place-items-center">
-          {slotIndexes.map((gridIndex) => (
-            <BookGridCell key={gridIndex} item={itemsByGrid.get(gridIndex)} />
-          ))}
-        </div>
+        {items.map((item) => (
+          <FreeformItem key={item.id} item={item} />
+        ))}
       </BlankBookPage>
     );
   },
@@ -47,19 +41,33 @@ export const BookPage = forwardRef<HTMLDivElement, BookPageProps>(
 
 BookPage.displayName = "BookPage";
 
-/** Một ô trong Grid 2x2 — có thể là moment, sticky note, hoặc ô trống */
-function BookGridCell({ item }: { item: BookPageItem | undefined }) {
-  // Ô trống
-  if (!item) {
-    return (
-      <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-purple-300/70">
-        <HeartIcon
-          className="size-7 opacity-50"
-          roughConfig={{ stroke: "var(--color-purple-400)" }}
-        />
-      </div>
-    );
-  }
+/** Bọc item theo vị trí/rotation/scale/z từ position (freeform) */
+function FreeformItem({ item }: { item: BookPageItem }) {
+  const position = resolvePageItemPosition(item.position);
+
+  return (
+    <div
+      className="pointer-events-none absolute"
+      style={{
+        left: `${position.x}%`,
+        top: `${position.y}%`,
+        zIndex: position.z,
+        transform: `translate(-50%, -50%) rotate(${position.rotation}deg) scale(${position.scale})`,
+      }}
+    >
+      <ItemContent item={item} />
+    </div>
+  );
+}
+
+/**
+ * Nội dung thật của item.
+ * - moment: Polaroid (size sm) + tiêu đề, xoay nhẹ theo hash, bọc Link → detail.
+ * - sticky_note: giấy note màu theo `color`.
+ * - sticker: chưa có catalog renderer — tạm ẩn (sẽ làm ở Buổi B cùng editor).
+ */
+function ItemContent({ item }: { item: BookPageItem }) {
+  if (item.item_type === "sticker") return null;
 
   // Sticky note
   if (item.item_type === "sticky_note" && item.stickyNote) {
@@ -87,15 +95,11 @@ function BookGridCell({ item }: { item: BookPageItem | undefined }) {
       key={moment.id}
       href={route.moments.detail(moment.id)}
       scroll={false}
+      className="pointer-events-auto block"
     >
       <Polaroid
         text={moment.title}
         className="rotate-(--moment-rotate) hover:scale-102 duration-150"
-        style={
-          {
-            "--moment-rotate": `${hashToIntRange(moment.title, -6, 6)}deg`,
-          } as React.CSSProperties
-        }
         size="sm"
       >
         {coverImage && (

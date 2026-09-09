@@ -6,30 +6,41 @@ import type { RichMoment } from "./moment";
  */
 export type FlipSide = "left" | "right";
 
-/** Loại item được phép gắn vào một ô của grid 2x2 (mở rộng được về sau) */
-export type PageItemType = "moment" | "sticky_note";
+/** Loại item được phép gắn lên một mặt trang (mở rộng được về sau) */
+export type PageItemType = "moment" | "sticky_note" | "sticker";
 
 /**
- * Sticker nổi tự do trên một mặt trang.
- * Tọa độ x, y lưu theo PHẦN TRĂM (0-100) của kích thước mặt trang để
- * cuốn sổ co giãn responsive mà sticker không bị lệch vị trí.
+ * Vị trí TỰ DO của một item trên mặt trang (freeform — thay cho grid 2x2).
+ * Tọa độ x, y lưu theo PHẦN TRĂM (0-100) của kích thước mặt trang để cuốn sổ
+ * co giãn responsive mà item không bị lệch vị trí (quyết định F5).
  */
-export interface Sticker {
-	id: string;
-	/** Loại sticker (id sprite/đường dẫn hình ảnh) */
-	type: string;
-	/** Sticker thuộc mặt nào — gắn theo mặt giấy khi lật (quyết định C1) */
-	side: FlipSide;
-	/** Vị trí X theo % chiều rộng mặt trang (0-100) */
+export interface PageItemPosition {
+	/** Vị trí X theo % chiều rộng mặt trang (0-100), mặc định 50 = giữa */
 	x: number;
-	/** Vị trí Y theo % chiều cao mặt trang (0-100) */
+	/** Vị trí Y theo % chiều cao mặt trang (0-100), mặc định 50 = giữa */
 	y: number;
-	/** Góc xoay (độ) */
+	/** Góc xoay (độ) — không có giá trị thì 0 */
 	rotation: number;
-	/** Tỷ lệ phóng thu (1 = gốc) */
+	/** Tỷ lệ phóng thu (1 = gốc) — scale cả khung bằng CSS transform (quyết định F3) */
 	scale: number;
-	/** Màu sắc của sticker */
-	color: string;
+	/** Thứ tự lớp chồng lên nhau (cao = nằm trên) */
+	z: number;
+}
+
+/** Vị trí mặc định khi item được thả vào trang (tâm mặt trang) */
+export const DEFAULT_PAGE_ITEM_POSITION: PageItemPosition = {
+	x: 50,
+	y: 50,
+	rotation: 0,
+	scale: 1,
+	z: 1,
+};
+
+/**
+ * Ghép position với default — dữ liệu cũ/thiếu trường vẫn render được.
+ */
+export function resolvePageItemPosition(position?: Partial<PageItemPosition> | null): PageItemPosition {
+	return { ...DEFAULT_PAGE_ITEM_POSITION, ...position };
 }
 
 /** Cặp trang — đơn vị lưu trữ chính của sổ (bảng `pair_flip_pages`) */
@@ -37,8 +48,6 @@ export interface PairFlipPage {
 	id: string;
 	/** Thứ tự của cặp trang trong sổ (bắt đầu từ 1, duy nhất) */
 	page_order: number;
-	/** Danh sách sticker nổi tự do trên cặp trang này */
-	stickers: Sticker[];
 	created_at: string | null;
 	updated_at: string | null;
 }
@@ -63,15 +72,18 @@ export interface StickyNote {
 	updated_at: string | null;
 }
 
-/** Vị trí một item trên mặt trang (bảng `page_items`) */
+/**
+ * Một item trên một mặt trang (bảng `page_items`) — freeform.
+ * `item_id` đa hình: moments / sticky_notes / sticker-catalog tùy item_type.
+ * Ràng buộc UNIQUE(item_type, item_id) — mỗi item chỉ gắn đúng 1 nơi (quyết định F4).
+ */
 export interface PageItem {
 	id: string;
 	pair_page_id: string;
 	side: FlipSide;
-	/** Chỉ số ô trong grid 2x2: 0-3 */
-	grid_index: number;
+	position: PageItemPosition;
 	item_type: PageItemType;
-	/** Trỏ tới `moments.id` hoặc `sticky_notes.id` tùy item_type (đa hình) */
+	/** Trỏ tới `moments.id` / `sticky_notes.id` / sticker id tùy item_type */
 	item_id: string;
 	created_at: string | null;
 	updated_at: string | null;
@@ -79,7 +91,8 @@ export interface PageItem {
 
 /**
  * PageItem đã resolve dữ liệu thật (được API service ghép nối).
- * Đúng một trong hai trường moment/stickyNote có giá trị theo item_type.
+ * - moment/stickyNote: có giá trị theo item_type tương ứng.
+ * - sticker: chưa có bảng dữ liệu (chỉ là catalog client) → cả 2 đều null.
  */
 export type BookPageItem = PageItem & {
 	moment: RichMoment | null;
@@ -97,32 +110,11 @@ export type BookData = {
 	tabs: FlipTab[];
 };
 
-// ----------------------------------------------------------------------------
-// Mô hình hiển thị — tách khỏi DB để FlipBook dùng được khi chưa có dữ liệu
-// (Buổi 2 dùng dữ liệu demo, sau này map từ BookPageItem ra cùng cấu trúc)
-// ----------------------------------------------------------------------------
-
-/** Một ô grid 2x2 đã sẵn sàng render trên trang nội dung */
-export type BookContentItem =
-	| {
-			kind: "moment";
-			id: string;
-			title: string;
-			imageUrl: string | null;
-			createdAt: string;
-	  }
-	| {
-			kind: "sticky_note";
-			id: string;
-			content: string;
-			color: string;
-	  };
-
-/** Cặp trang (spread) nội dung — index 0..3 tương ứng 4 ô của từng mặt */
-export type BookContentPage = {
-	id: string;
-	items: {
-		left: (BookContentItem | null)[];
-		right: (BookContentItem | null)[];
-	};
+/** Tham số đặt/di chuyển item lên trang (dùng qua API service) */
+export type PlaceItemInput = {
+	pairPageId: string;
+	side: FlipSide;
+	itemType: PageItemType;
+	itemId: string;
+	position?: Partial<PageItemPosition>;
 };

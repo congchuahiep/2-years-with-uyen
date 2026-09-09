@@ -14,7 +14,15 @@ import {
 	placePageItem,
 	removePageItem,
 } from "@/services/flipbook";
-import type { FlipSide, FlipTab, PairFlipPage, PageItem, StickyNote } from "@/types/flipbook";
+import type {
+	FlipSide,
+	FlipTab,
+	PairFlipPage,
+	PageItem,
+	PageItemPosition,
+	PageItemType,
+	StickyNote,
+} from "@/types/flipbook";
 
 /**
  * Bộ mutation hook cho FlipBook — mỗi hook bọc 1 hàm service và tự
@@ -81,9 +89,10 @@ export const useDeletePairFlipPage = (options?: UseDeletePairFlipPageOptions) =>
 export type PlacePageItemVariables = {
 	pairPageId: string;
 	side: FlipSide;
-	gridIndex: number;
-	itemType: "moment" | "sticky_note";
+	itemType: PageItemType;
 	itemId: string;
+	/** Vị trí tự do (% của mặt trang) — bỏ qua nếu để mặc định giữa trang */
+	position?: Partial<PageItemPosition>;
 };
 
 type UsePlacePageItemOptions = Omit<
@@ -91,7 +100,7 @@ type UsePlacePageItemOptions = Omit<
 	"mutationFn"
 >;
 
-/** Đặt một item (moment/sticky_note) vào một ô trống của cặp trang */
+/** Đặt một item (moment/sticky_note/sticker) lên một mặt trang ở vị trí tự do */
 export const usePlacePageItem = (options?: UsePlacePageItemOptions) => {
 	const invalidateFlipBook = useInvalidateFlipBook();
 
@@ -109,7 +118,7 @@ export type MovePageItemVariables = {
 	itemId: string;
 	pairPageId: string;
 	side: FlipSide;
-	gridIndex: number;
+	position: PageItemPosition;
 };
 
 type UseMovePageItemOptions = Omit<
@@ -117,7 +126,7 @@ type UseMovePageItemOptions = Omit<
 	"mutationFn"
 >;
 
-/** Di chuyển một item tới ô khác (cùng hoặc khác cặp trang) */
+/** Di chuyển một item tới vị trí/trang khác (freeform) */
 export const useMovePageItem = (options?: UseMovePageItemOptions) => {
 	const invalidateFlipBook = useInvalidateFlipBook();
 
@@ -159,7 +168,7 @@ export type AddStickyNoteVariables = {
 	color?: string;
 	pairPageId: string;
 	side: FlipSide;
-	gridIndex: number;
+	position?: Partial<PageItemPosition>;
 };
 
 type UseAddStickyNoteOptions = Omit<
@@ -167,7 +176,7 @@ type UseAddStickyNoteOptions = Omit<
 	"mutationFn"
 >;
 
-/** Tạo StickyNote và gắn ngay vào một ô của cặp trang */
+/** Tạo StickyNote và gắn ngay vào một mặt trang */
 export const useAddStickyNote = (options?: UseAddStickyNoteOptions) => {
 	const invalidateFlipBook = useInvalidateFlipBook();
 

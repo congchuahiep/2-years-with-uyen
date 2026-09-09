@@ -4,4 +4,5 @@ export const USER_PROFILE_QUERY_KEY = {
 
 export const FLIPBOOK_QUERY_KEY = {
 	book: ["flipbook"],
+	unplacedMoments: ["flipbook", "unplaced-moments"],
 };

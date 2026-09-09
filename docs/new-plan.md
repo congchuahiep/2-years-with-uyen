@@ -40,67 +40,78 @@ Các tính năng thêm, chưa cần làm ngay:
 
 ### Kế hoạch
 
-#### Tái cấu trúc Database & Thiết kế Model
+> **🗓️ Tiến độ thực tế (cập nhật 2026-09-06):** Buổi 1 ✅ · Buổi 2 ✅ · Buổi 3 ✅ · Buổi A (Freeform schema+render) ✅ · **Buổi B (Editor freeform v1) ✅** — còn lại: cross-page dragging, sticker catalog mở rộng, Buổi 6, task "bìa sau chứa Moment".
+
+#### ✅ Buổi 1 (HOÀN THÀNH) — Tái cấu trúc Database & Thiết kế Model
+
+> Hiện trạng: 4 bảng + RPC `reorder_pair_flip_pages` + RLS/GRANT đã apply lên **remote** (đã verify bằng `supabase db query --linked`); backfill 4 moment publish → 1 PairFlipPage (4 mặt trái). API `src/services/flipbook.ts` + hooks `use-flipbook.ts` / `use-flipbook-mutations.ts` (TanStack Query).
+> Còn lại ở mục 1: ràng buộc `is_cover` cho bìa (chuyển sang Buổi 3).
 
 Mục tiêu: Đảm bảo Supabase sẵn sàng lưu trữ cấu trúc trang sổ mới.
 
 1. Thiết kế Schema mới:
-    - Table `pair_flip_pages`: Lưu thứ tự các cặp trang (page_order), lưu vị trí sticker bằng JSON — mỗi sticker gồm `{ type, side: 'left'|'right', x, y, rotation, scale, color }` (sticker gắn theo từng mặt giấy — quyết định C1).
+    - Table `pair_flip_pages`: Lưu thứ tự các cặp trang (page_order). ⚠️ ĐÃ BỎ cột `stickers` (migration freeform) — sticker giờ là `page_items.item_type='sticker'` (quyết định F2).
     - ⚠️ Bìa SAU (và mặt trong bìa trước) giờ cũng chứa Moment (quyết định A3) → cần lưu được `page_items` cho các mặt này. Bìa TRƯỚC là trang đứng yên (không chứa Moment) → không cần lưu. Gợi ý: tạo `pair_flip_pages` đặc biệt với `page_order = 0` (bìa trước) và `page_order = S+1` (bìa cuối), đánh dấu bằng cột `is_cover` (chặn thêm/xoá trang qua API nhưng vẫn cho gắn item) — sẽ chốt chi tiết ở Buổi 3.
     - Table `flip_tabs`: Đánh dấu mục lục (pair_page_id, label, color, position).
-    - Table `page_items`: Bảng đa hình (Polymorphic) chứa vị trí của các item trong trang (pair_page_id, side - left/right, grid_index - 0 đến 3, item_type - 'moment' | 'sticky_note', `item_id`). Thêm ràng buộc `UNIQUE(pair_page_id, side, grid_index)` để mỗi ô chỉ chứa 1 item.
+    - Table `page_items`: Bảng đa hình (Polymorphic) — **FREEFORM** (quyết định F): (pair_page_id, side - left/right, item_type - 'moment' | 'sticky_note' | 'sticker', `item_id`, `position JSONB {x, y (%), rotation, scale, z}`). Ràng buộc `UNIQUE(item_type, item_id)` — mỗi item chỉ ở đúng 1 nơi (F4). (Đã bỏ `grid_index` + UNIQUE slot ở migration freeform).
     - Table `sticky_notes`: Bảng nội dung note để `page_items.item_id` trỏ tới (id, content, color, created_at, ...) — quyết định C2.
 2. Migration Data:
     - Viết script (hoặc Edge Function) để tự động chuyển đổi các Moment hiện có ở dạng Timeline sang cấu trúc pair_flip_pages: sắp xếp theo `event_date` tăng dần, đổ lần lượt 4 Moment vào mặt trái, 4 tiếp theo vào mặt phải, lặp lại cho tới hết (quyết định A2). Moment không có ảnh vẫn được đưa vào ô grid bình thường (quyết định A4).
 3. Tạo API service để kết nối frontend + supabase
 
-#### Nghiên cứu & Xây dựng Lõi Flip Book Component
+#### ✅ Buổi 2 (HOÀN THÀNH) — Nghiên cứu & Xây dựng Lõi Flip Book Component
 
-Mục tiêu: Tạo ra được cuốn sổ có thể lật trang mượt mà. Tuy nhiên cái khó là làm sao để có thể tạo Flip Book Component ăn khớp với style của dự án?
+> Không dùng engine tự build — dùng thư viện `react-pageflip` (core `page-flip`) theo quyết định E1: hiệu ứng `user_fold` (kéo góc trang bám chuột), bóng đổ động, mobile support.
 
-1. Đánh giá thư viện: ✅ **Đã chốt: tự build bằng Framer Motion / Motion (3D transform `rotateY`)** để kiểm soát hoàn toàn giao diện theo style doodle — không dùng react-pageflip (quyết định E1). Một số nguồn tham khảo:
-    - [https://github.com/vuvandinh123/react-flipbook](https://github.com/vuvandinh123/react-flipbook)
-2. Xây dựng Scrapbook Component:
-    - Khi lật trang nhanh sẽ không bị cắt animation trước đó.
-    - Thiết kế cấu trúc DOM: Cover (Bìa), Các PairFlipPage (Trang trong).
-    - Bìa trước / bìa sau là **trang cố định** (UI thuần, không lưu DB): bìa trước chứa lời chào, bìa sau lời kết, không cho thêm/xoá/sửa/chèn (quyết định A3 + B2).
-    - Tích hợp gesture (kéo thả vuốt) hoặc nút "Next/Prev" để lật trang.
-    - Xử lý logic âm thanh lật giấy (sử dụng use-sound với file tiếng xột xoạt).
+> Hiện trạng (src/components/book/):
+- Cấu trúc child: Bìa trước (hard, đơn lẻ) → [mặt trong bìa trước] → Intro 3 trang (tiêu đề + 2 trang mở đầu) → các cặp (trái, phải) moment → 10 trang trắng dự trữ → trang tin nhắn cuối → [mặt trong bìa sau] → Bìa sau (hard, đơn lẻ). Quy ước số: bìa = -1, gian = 0, intro = (1,2,3), cặp moment đầu = (4,5), ...
+- `BookPageScale`: nội dung dàn layout chuẩn 520×650, `transform: scale()` theo ResizeObserver — sổ co/giãn mà không vỡ layout.
+- Responsive: viewport < 1024px → 1 trang (portrait, mọi mặt vẽ như trang phải); ≥ 1024px → spread 2 trang. Tự đo container + debounce 150ms, remount `HTMLFlipBook` khi đổi chế độ.
+- `GhostBookDepth`: bìa ảo nằm sau sổ (`-z-50`), fade-in khi lật qua bìa → ảo giác "bìa to hơn, viền lộ ra" (giữ nguyên react-pageflip, không patch lib).
+- `flipByButton`: workaround bug page-flip 2.0.x — với `disableFlipByClick`, cú `flipPrev` bị nuốt im lặng ở portrait (tạm gỡ guard quanh API call).
+- Âm thanh lật trang (`flip`) qua use-sound; cursor grab/grabbing bám theo state `user_fold` / `fold_corner`.
+- Bìa trước: `FrontBookCover` trang trí thuần (không moment). Mặt trong bìa + bìa sau: shell `BookCover` tái sử dụng — theo A3 mới sẽ chứa Moment (Buổi 3).
 
-#### Xây dựng Layout Grid 2x2 & Item Renderers
+#### ✅ Buổi 3 (PHẦN LỚN HOÀN THÀNH) — Xây dựng Layout Grid 2x2 & Item Renderers
 
-Mục tiêu: Hiển thị nội dung lên mặt trang giấy.
+1. FlipPage Component: ✅ Grid 2x2 trên nền giấy `BlankBookPage` (amber-50 + dot grid + bóng gáy); số trang góc dưới qua `BookNumber`.
+2. Item Components:
+    - MomentGridItem ✅ = Polaroid `size="sm"` + tiêu đề, xoay nhẹ theo hash của title (`hashToIntRange`), hover scale, bọc `<Link>` → `/moments/detail/:id`.
+    - StickyNoteItem ⚠️ bản cơ bản đã có (có thể nâng cấp viền răng cưa + font handwriting sau, theo skill `rough-component`).
+3. CÒN LẠI (quyết định A3 mới): **Bìa sau + mặt trong bìa trước phải thành grid chứa Moment** → cần schema `is_cover` đánh dấu bìa (chặn thêm/xoá qua API nhưng vẫn cho gắn item) + luồng đọc/write `page_items` cho 2 mặt bìa.
 
-1. Tạo FlipPage Component:
-    - Thiết kế giao diện 1 mặt trang với CSS Grid (2 cột x 2 hàng).
-    - Áp dụng phong cách Doodle: nền giấy ngả vàng + dot grid theo pattern hiện có (`globals.css` + Rough.js) — không dùng gói doodle.css (quyết định E2).
-2. Xây dựng Item Components:
-    - MomentGridItem: Tái sử dụng Polaroid component hiện tại nhưng điều chỉnh size cho vừa 1 ô grid; hiển thị ảnh + tiêu đề giống MomentItem hiện tại (quyết định A4).
-    - StickyNoteItem: Tạo component mới hình tờ giấy note nhỏ, viền răng cưa (RoughBox), có font chữ handwriting.
+#### ✅ Buổi A (HOÀN THÀNH 2026-09-06) — Schema & Render FREEFORM
 
-#### Tích hợp Kéo/Thả (Drag & Drop) Cơ bản
+Thay grid 2x2 cố định bằng **giấy vẽ tự do**: người dùng đặt item ở bất kỳ vị trí, xoay, phóng thu (quyết định F1–F7).
 
-Mục tiêu: Cho phép người dùng sắp xếp lại các item.
+> Hiện trạng:
+> - Migration `20260906130000_flipbook_freeform.sql` + `20260906130100_fix_freeform_positions.sql` ĐÃ APPLY remote (verify: 4 moment dàn 4 góc phần tư, `position` % chuẩn).
+> - Types: `PageItemPosition {x,y,rotation,scale,z}`, `resolvePageItemPosition()` fallback default giữa trang; bỏ `Sticker`/`stickers` cũ.
+> - Service: `placePageItem`/`movePageItem`/`addStickyNoteToPage` nhận `position?`; mới `fetchUnplacedMoments()` (tray 2); hooks update theo.
+> - Render: `BookPage` tự do — item đặt `left/top %` + `translate(-50%,-50%) rotate scale zIndex`; sticker chưa có catalog → tạm ẩn view (làm ở Buổi B).
 
-0. Sử dụng một nút để chuyển đổi sang chế độ sửa FlipBook
-1. Setup @dnd-kit/core: Cấu hình Drag & Drop Context bao bọc toàn bộ cuốn sổ.
-2. Draggable & Droppable:
-    - Biến các ô Grid thành các Droppable zones.
-    - Biến MomentGridItem và StickyNoteItem thành Draggable.
-3. Logic hoán đổi (Swap/Move): Xử lý sự kiện onDragEnd để cập nhật vị trí mới của item (chuyển ô trong cùng 1 trang, hoặc kéo qua trang đối diện nếu đang mở PairFlipPage).
-4. Quản lý trang (quyết định B1, B2): Cho phép **chèn PairFlipPage trống ở bất kỳ vị trí nào** trong sách (renumber `page_order` cho các cặp trang phía sau vị trí chèn) và **xoá PairFlipPage trống**.
+#### ✅ Buổi B (v1 HOÀN THÀNH 2026-09-06) — Editor Freeform
 
-#### Drag & Drop Nâng cao & Hệ thống Sticker
+Mục tiêu: cho phép "vẽ lên trang giấy" — kéo thả item, chỉnh vị trí/kích thước tự do.
 
-Mục tiêu: Hoàn thiện tính năng tương tác tự do.
+> Hiện trạng (src/components/book/editor/):
+> - **`book-editor.tsx`**: overlay toàn màn hình (z-100, khoá lật sách — F7); toolbar chọn cặp trang (chips), ＋ Trang trống (chèn sau trang đang chọn — B1), 🗑 Xoá trang trống (B2), ✕ Hoàn tất; canvas 2 mặt (F1) dàn 520×650 scale theo cửa sổ; hint thao tác.
+> - **`editor-face.tsx`**: mỗi mặt = `BlankBookPage` + item FREEFORM — motion drag (pattern PolaroidBoard), quy đổi px↔% theo kích thước thiết kế (F5), clamp trong trang; hover toolbar: ▲ lên lớp, +/− scale (F3), ⟲⟳ xoay ±7.5° (F6), × gỡ khỏi trang (un-place).
+> - **`editor-trays.tsx`**: 2 tray (F) — Sticker (kéo thả, drop detection theo rect 2 mặt) + Ghi chú (textarea + 5 màu + nút Dán → `addStickyNoteToPage` tại mặt trái) + **Moment chưa gắn** (`fetchUnplacedMoments` → kéo thả lên canvas, tự cập nhật qua invalidation).
+> - **`sticker-catalog.tsx`**: 5 sticker doodle (heart, star, daisy, bow, shooting-star) — `page_items.item_id` = sticker id; renderer dùng chung tray/canvas.
+> - Nút bật/tắt "✏️ Sửa trang" trên thanh điều khiển `/book`.
+>
+> ⏳ Còn lại: **Cross-page dragging** (kéo item ra mép → tự lật sang trang kế) — phần khó nhất, để sau; thêm sticker vào catalog; preview giữa chừng khi kéo item giữa "đang gắn" nếu muốn chuyển trang.
 
-1. Chuyển trang khi kéo (Cross-page Dragging): (Phần khó nhất) Xử lý logic khi người dùng cầm 1 tấm ảnh kéo về sát mép màn hình -> Tự động lật sang trang tiếp theo/trước đó.
-2. Lớp Sticker Tự do (Free-float Layer):
-    - Xây dựng một div absolute đè lên trên từng mặt trang (FlipPage) của PairFlipPage (quyết định C1).
-    - Cho phép người dùng kéo thả Sticker vào lớp này (lưu tọa độ X, Y tuyệt đối, xoay, scale, màu kèm `side: 'left'|'right'` để biết sticker thuộc mặt nào — **sticker xoay theo mặt giấy khi lật trang**).
-3. Tạo StickyNote (quyết định C2): Bất kỳ người dùng nào cũng được phép tạo StickyNote (nút trong chế độ sửa) — nhập **text + chọn màu**, sau đó gán vào 1 ô trống của Grid (dưới dạng `page_items.item_type = 'sticky_note'`).
+#### 🗑️ Buổi 4 cũ — ĐÃ THAY THẾ bởi Buổi B (Editor Freeform) ở trên
 
-#### FlipTab Navigation & Tích hợp Toolbar
+- Nội dung cũ (dnd-kit grid cells, swap ô, quản lý trang) đã được gộp & mở rộng thành Editor freeform. Không còn grid để kéo giữa các ô.
+
+#### 🗑️ Buổi 5 cũ — ĐÃ THAY THẾ bởi Buổi B (Editor Freeform) ở trên
+
+- Nội dung cũ (layer sticker trên PairFlipPage, free-float stickers, sticky note creation) đã được gộp: sticker/note/moment cùng nằm trong `page_items` freeform.
+
+#### ⏳ Buổi 6 (CHƯA LÀM) — FlipTab Navigation & Tích hợp Toolbar
 
 Mục tiêu: Hoàn thiện UI/UX và kết nối với các phần khác của hệ thống.
 
@@ -131,3 +142,10 @@ Mục tiêu: Hoàn thiện UI/UX và kết nối với các phần khác của h
 | D3 | Form Moment | **Giữ nguyên như hiện tại** (route/modal riêng), không nhúng vào sách |
 | E1 | Engine lật trang | **Dùng thư viện `react-pageflip`** (core `page-flip`) — có sẵn hiệu ứng `user_fold` (góc trang bám theo chuột), bóng đổ động, hỗ trợ mobile. Bỏ hẳn engine tự build (đã thử, cảm giác lật chưa thật) |
 | E2 | doodle.css | Không dùng gói doodle.css; nền giấy dùng pattern hiện có (dotgrid + Rough.js) |
+| F1 | Canvas sửa | Cả 2 mặt của spread — kéo item giữa mặt trái/phải tự do (dữ liệu vẫn ghi `side`) |
+| F2 | Sticker | Gộp vào `page_items` (`item_type='sticker'`), bỏ `pair_flip_pages.stickers` JSON |
+| F3 | Kích thước | Scale cả khung bằng CSS `transform: scale` (0.5–1.5) |
+| F4 | Ràng buộc | `UNIQUE(item_type, item_id)` — mỗi item chỉ ở đúng 1 nơi (nền tảng tray "chưa gắn") |
+| F5 | Toạ độ | Lưu **%** theo mặt trang (responsive) |
+| F6 | Xoay | Có, ±7.5°/lần (như PolaroidBoard) |
+| F7 | Editor | Overlay trên `/book`, khoá flip khi edit (canvas ngoài HTMLFlipBook) |

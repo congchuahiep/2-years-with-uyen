@@ -12,7 +12,7 @@ export const BlankBookPage = forwardRef<
 		<div
 			ref={ref}
 			className={cn(
-				"size-full select-none rounded-md",
+				"relative size-full select-none rounded-md",
 				"bg-amber-50",
 				"bg-[radial-gradient(circle,var(--color-purple-400)_1px,transparent_0px)]",
 				"bg-size-[24px_24px]",

@@ -3,9 +3,9 @@
 import { motion, type PanInfo } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
-import { useUnplacedMoments } from "@/hooks/use-flipbook";
-import { useAddStickyNote, usePlacePageItem } from "@/hooks/use-flipbook-mutations";
-import type { FlipSide, PageItemType } from "@/types/flipbook";
+import { useUnplacedMoments } from "@/features/book/hooks/use-flipbook";
+import { useAddStickyNote, usePlacePageItem } from "@/features/book/hooks/use-flipbook-mutations";
+import type { FlipSide, PageItemType } from "@/features/book/types";
 import { STICKER_CATALOG } from "./sticker-catalog";
 
 const clamp = (value: number, min: number, max: number) =>

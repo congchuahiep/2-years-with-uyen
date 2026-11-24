@@ -1,16 +1,16 @@
 "use client";
 
-import { Book } from "@/components/book/book";
+import { Book } from "@/features/book/components/book";
 import { PaletteIcon } from "@/shared/icons/palette-icon";
 import { ErrorMessageBox } from "@/shared/components/error-message-box";
 import { Spinner } from "@/shared/components/spinner";
-import { useFlipBook } from "@/hooks/use-flipbook";
+import { useFlipBook } from "@/features/book/hooks/use-flipbook";
 
 /**
  * Trang `/book` — hiển thị cuốn sổ lật (FlipBook) từ dữ liệu Supabase.
  * Dữ liệu được lấy qua hook `useFlipBook` (TanStack Query).
  */
-export default function BookView() {
+export function BookView() {
   const { data, status, error } = useFlipBook();
 
   // Đang tải dữ liệu

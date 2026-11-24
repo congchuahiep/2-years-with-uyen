@@ -1,4 +1,4 @@
-import type { RichMoment } from "./moment";
+import type { RichMoment } from "@/types/moment";
 
 /**
  * Mặt của trang giấy trong một cặp trang (PairFlipPage).

@@ -3,7 +3,7 @@ import {
 	useMutation,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { FLIPBOOK_QUERY_KEY } from "@/configs/querykey";
+import { FLIPBOOK_QUERY_KEY } from "@/features/book/query-key";
 import {
 	addStickyNoteToPage,
 	createFlipTab,
@@ -13,7 +13,7 @@ import {
 	movePageItem,
 	placePageItem,
 	removePageItem,
-} from "@/services/flipbook";
+} from "@/features/book/services/flipbook";
 import type {
 	FlipSide,
 	FlipTab,
@@ -22,7 +22,7 @@ import type {
 	PageItemPosition,
 	PageItemType,
 	StickyNote,
-} from "@/types/flipbook";
+} from "@/features/book/types";
 
 /**
  * Bộ mutation hook cho FlipBook — mỗi hook bọc 1 hàm service và tự

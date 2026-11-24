@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import BookView from "./view";
+import { BookView } from "@/features/book";
 
 export const metadata: Metadata = {
 	title: "Sổ kỷ niệm",

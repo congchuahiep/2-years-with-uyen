@@ -12,7 +12,7 @@ import HTMLFlipBook from "react-pageflip";
 import { cn } from "tailwind-variants";
 import { ArrowIcon } from "@/shared/icons/arrow";
 import { Button } from "@/shared/components/button";
-import type { BookPairFlipPage } from "@/types/flipbook";
+import type { BookPairFlipPage } from "@/features/book/types";
 import { playSound } from "@/shared/utils/audio";
 import { PencilIcon } from "@/shared/icons/pencil";
 import { BookCover } from "./book-cover";

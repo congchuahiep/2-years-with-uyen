@@ -8,8 +8,8 @@ import type {
   PageItemType,
   PairFlipPage,
   StickyNote,
-} from "@/types/flipbook";
-import { DEFAULT_PAGE_ITEM_POSITION } from "@/types/flipbook";
+} from "@/features/book/types";
+import { DEFAULT_PAGE_ITEM_POSITION } from "@/features/book/types";
 import type { RichMoment } from "@/types/moment";
 import { createClient } from "@/utils/supabase/client";
 

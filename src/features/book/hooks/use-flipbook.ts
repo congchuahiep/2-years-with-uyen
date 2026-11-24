@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { FLIPBOOK_QUERY_KEY } from "@/configs/querykey";
-import { fetchBook, fetchUnplacedMoments } from "@/services/flipbook";
-import type { BookData } from "@/types/flipbook";
+import { FLIPBOOK_QUERY_KEY } from "@/features/book/query-key";
+import { fetchBook, fetchUnplacedMoments } from "@/features/book/services/flipbook";
+import type { BookData } from "@/features/book/types";
 import type { RichMoment } from "@/types/moment";
 
 /**

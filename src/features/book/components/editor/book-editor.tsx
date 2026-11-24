@@ -4,8 +4,8 @@ import { useLayoutEffect, useRef, useState } from "react";
 import {
   useCreatePairFlipPage,
   useDeletePairFlipPage,
-} from "@/hooks/use-flipbook-mutations";
-import type { BookPairFlipPage, FlipSide } from "@/types/flipbook";
+} from "@/features/book/hooks/use-flipbook-mutations";
+import type { BookPairFlipPage, FlipSide } from "@/features/book/types";
 import { EDITOR_FACE_HEIGHT, EDITOR_FACE_WIDTH, EditorFace } from "./editor-face";
 import { type EditorDropTarget, EditorTrays } from "./editor-trays";
 

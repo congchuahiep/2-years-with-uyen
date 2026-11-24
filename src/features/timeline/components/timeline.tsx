@@ -7,35 +7,67 @@ import {
 	useSpring,
 	useTransform,
 } from "motion/react";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import {
+	Fragment,
+	type ReactNode,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import rough from "roughjs";
 import type { Options } from "roughjs/bin/core";
-import { route } from "@/configs/route";
-import { useModal } from "@/shared/providers/modal-provider";
-import type { TimelineItem, TimelinePoint } from "@/types/timeline";
 import cn from "@/shared/utils/cn";
-import { MomentItem } from "./moment-item";
+import type { TimelineNode, TimelinePoint } from "../types";
 import { YearIndicatorItem } from "./year-indicator-item";
 
 const STABLE_VIEWPORT_RATIO = 0.8;
 const SAMPLES_PER_100VH = 200;
 
-interface TimelineProps {
+export interface TimelineRenderItemArgs<T> {
+	data: T;
+	index: number;
+	align: "left" | "right";
+	/** Style đã tính sẵn: top/left theo % và độ xoay nhịp nhàng. */
+	style: React.CSSProperties;
+	yPct: number;
+	currentDrawYPercent: MotionValue<number>;
+}
+
+export interface TimelineRenderYearArgs {
+	year: number;
+	index: number;
+	style: React.CSSProperties;
+	yPct: number;
+	currentDrawYPercent: MotionValue<number>;
+}
+
+interface TimelineProps<T> {
+	/** Điểm của đường cong, toạ độ % (0-100). */
 	points: TimelinePoint[];
-	items: TimelineItem[];
+	/** Node đã chèn mốc năm xen giữa các item. */
+	nodes: TimelineNode<T>[];
+	/** Vị trí % của từng node trên khung timeline. */
 	itemPositions: TimelinePoint[];
+	/** Phần tử cuộn bao ngoài — thường là #root của app. */
+	scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+	/** Tự render một item dữ liệu; nhận sẵn style toạ độ + độ xoay. */
+	renderItem: (args: TimelineRenderItemArgs<T>) => ReactNode;
+	/** Tự render mốc năm; bỏ trống thì dùng YearIndicatorItem mặc định. */
+	renderYear?: (args: TimelineRenderYearArgs) => ReactNode;
 	className?: string;
 	roughConfig?: Options;
 }
 
-export function Timeline({
+export function Timeline<T>({
 	points,
-	items,
+	nodes,
 	itemPositions,
+	scrollContainerRef,
+	renderItem,
+	renderYear,
 	className,
 	roughConfig = {},
-}: TimelineProps) {
+}: TimelineProps<T>) {
 	const svgGroupRef = useRef<SVGGElement>(null);
 	const placeholderGroupRef = useRef<SVGGElement>(null);
 	const timelineContainerRef = useRef<HTMLDivElement>(null);
@@ -45,8 +77,6 @@ export function Timeline({
 	const lookupTableRef = useRef<{ y: number; frac: number }[]>([]);
 
 	const configStr = JSON.stringify(roughConfig);
-
-	const { scrollContainerRef } = useModal();
 
 	const { scrollY } = useScroll({
 		container: scrollContainerRef,
@@ -304,68 +334,79 @@ export function Timeline({
 				<g ref={svgGroupRef} mask="url(#timeline-reveal-mask)" />
 			</svg>
 
-			<TimelineMomentList
-				items={items}
+			<TimelineNodes
+				nodes={nodes}
 				positions={itemPositions}
 				currentDrawYPercent={currentDrawYPercent}
+				renderItem={renderItem}
+				renderYear={renderYear}
 			/>
 		</div>
 	);
 }
 
-interface TimelineMomentListProps {
-	items: TimelineItem[];
+interface TimelineNodesProps<T> {
+	nodes: TimelineNode<T>[];
 	positions: TimelinePoint[];
 	currentDrawYPercent: MotionValue<number>;
+	renderItem: (args: TimelineRenderItemArgs<T>) => ReactNode;
+	renderYear?: (args: TimelineRenderYearArgs) => ReactNode;
 }
 
-function TimelineMomentList({
-	items,
+function TimelineNodes<T>({
+	nodes,
 	positions,
 	currentDrawYPercent,
-}: TimelineMomentListProps) {
-	return items.map((item, index) => {
+	renderItem,
+	renderYear,
+}: TimelineNodesProps<T>) {
+	return nodes.map((node, index) => {
 		const point = positions[index];
 		if (!point) return null;
 
-		const rotation = (index % 5) * 3 - 6;
-
-		switch (item.type) {
-			case "moment":
-				return (
-					<Link
-						key={item.data.id}
-						href={route.moments.detail(item.data.id)}
-						scroll={false}
-					>
-						<MomentItem
-							moment={item.data}
-							yPct={point.y}
-							currentDrawYPercent={currentDrawYPercent}
-							alight={index % 2 === 0 ? "left" : "right"}
-							style={{
-								top: `${point.y}%`,
-								left: `${point.x}%`,
-								rotate: `${rotation}deg`,
-							}}
-						/>
-					</Link>
-				);
-			case "year_indicator":
-				return (
-					<YearIndicatorItem
-						key={`year-${item.year}`}
-						year={item.year}
-						yPct={point.y}
-						currentDrawYPercent={currentDrawYPercent}
-						style={{
-							top: `${point.y}%`,
-							left: `${point.x}%`,
-						}}
-					/>
-				);
-			default:
-				return null;
+		if (node.type === "year") {
+			const style: React.CSSProperties = {
+				top: `${point.y}%`,
+				left: `${point.x}%`,
+			};
+			return (
+				<Fragment key={`year-${node.year}-${index}`}>
+					{renderYear
+						? renderYear({
+								year: node.year,
+								index,
+								style,
+								yPct: point.y,
+								currentDrawYPercent,
+							})
+						: (
+								<YearIndicatorItem
+									year={node.year}
+									yPct={point.y}
+									currentDrawYPercent={currentDrawYPercent}
+									style={style}
+								/>
+							)}
+				</Fragment>
+			);
 		}
+
+		const rotation = (index % 5) * 3 - 6;
+		return (
+			<Fragment key={node.id}>
+				{renderItem({
+					data: node.data,
+					index,
+					align: index % 2 === 0 ? "left" : "right",
+					style: {
+						top: `${point.y}%`,
+						left: `${point.x}%`,
+						rotate: `${rotation}deg`,
+					},
+					yPct: point.y,
+					currentDrawYPercent,
+				})}
+			</Fragment>
+		);
 	});
 }

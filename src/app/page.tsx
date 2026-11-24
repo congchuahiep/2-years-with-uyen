@@ -1,11 +1,11 @@
-import type { RichMoment } from "@/types/moment";
-import { createClient } from "@/utils/supabase/server";
 import {
 	calculateItemPositions,
 	calculateTimelineHeight,
 	generateBaseCurve,
-	generateTimelineItems,
-} from "@/utils/timeline";
+	generateTimelineNodes,
+} from "@/features/timeline";
+import type { RichMoment } from "@/types/moment";
+import { createClient } from "@/utils/supabase/server";
 import { HomeView } from "./view";
 
 export default async function HomePage() {
@@ -34,13 +34,19 @@ export default async function HomePage() {
 	}
 
 	const moments: RichMoment[] = data || [];
-	const timelineItems = generateTimelineItems(moments);
+	const timelineNodes = generateTimelineNodes(
+		moments.map((moment) => ({
+			id: moment.id,
+			date: moment.event_date,
+			data: moment,
+		})),
+	);
 
-	const totalHeightVh = calculateTimelineHeight(timelineItems);
+	const totalHeightVh = calculateTimelineHeight(timelineNodes);
 	const curvePoints = generateBaseCurve(totalHeightVh);
 
 	const itemPositions = calculateItemPositions(
-		timelineItems,
+		timelineNodes,
 		totalHeightVh,
 		curvePoints,
 	);
@@ -49,7 +55,7 @@ export default async function HomePage() {
 		<HomeView
 			curvePoints={curvePoints}
 			itemPositions={itemPositions}
-			timelineItems={timelineItems}
+			timelineNodes={timelineNodes}
 			totalHeightVh={totalHeightVh}
 		/>
 	);

@@ -2,8 +2,6 @@
 
 import { motion, type PanInfo } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
-import { route } from "@/configs/route";
 import { useMovePageItem, useRemovePageItem } from "@/features/book/hooks/use-flipbook-mutations";
 import { resolvePageItemPosition } from "@/features/book/types";
 import type { BookPageItem, FlipSide, PageItemPosition } from "@/features/book/types";
@@ -193,19 +191,17 @@ function ItemVisual({ item }: { item: BookPageItem }) {
   const coverImage = moment.images?.find((image) => image.isMain) ?? moment.images?.[0];
 
   return (
-    <Link href={route.moments.detail(moment.id)} scroll={false} onClick={(e) => e.preventDefault()}>
-      <Polaroid text={moment.title} size="sm">
-        {coverImage && (
-          <RoughBox className="size-full">
-            <Image
-              src={coverImage.url}
-              alt={moment.title}
-              className="object-cover -z-50 pointer-events-none"
-              fill
-            />
-          </RoughBox>
-        )}
-      </Polaroid>
-    </Link>
+    <Polaroid text={moment.title} size="sm">
+      {coverImage && (
+        <RoughBox className="size-full">
+          <Image
+            src={coverImage.url}
+            alt={moment.title}
+            className="object-cover -z-50 pointer-events-none"
+            fill
+          />
+        </RoughBox>
+      )}
+    </Polaroid>
   );
 }

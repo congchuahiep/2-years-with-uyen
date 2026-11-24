@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import type { Options } from "roughjs/bin/core";
-import type { DeezerTrack } from "@/types/dezzer";
+import type { DeezerTrack } from "@/features/music/types";
 import cn from "@/shared/utils/cn";
 import { RoughTag } from "@/shared/components/rough-tag";
 

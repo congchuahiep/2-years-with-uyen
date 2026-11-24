@@ -1,62 +1,15 @@
-import {
-	calculateItemPositions,
-	calculateTimelineHeight,
-	generateBaseCurve,
-	generateTimelineNodes,
-} from "@/features/timeline";
-import type { RichMoment } from "@/types/moment";
-import { createClient } from "@/utils/supabase/server";
-import { HomeView } from "./view";
+import type { Metadata } from "next";
+import { BookView } from "@/features/book";
 
-export default async function HomePage() {
-	const supabase = await createClient();
+export const metadata: Metadata = {
+	title: "Sổ kỷ niệm",
+	description: "Cuốn sổ lật lưu giữ kỷ niệm của Hiệp và Uyên",
+};
 
-	const { data, error } = await supabase
-		.from("moments")
-		.select(
-			`
-      *,
-      profiles (
-        first_name,
-        last_name,
-        avatar_url
-      )
-    `,
-		)
-		.neq("status", "draft")
-		.order("event_date", { ascending: false });
-
-	if (error) {
-		console.error("Lỗi truy vấn moments:", error);
-		throw new Error(
-			"Không thể tải dữ liệu cho dòng thời gian. Vui lòng thử lại sau.",
-		);
-	}
-
-	const moments: RichMoment[] = data || [];
-	const timelineNodes = generateTimelineNodes(
-		moments.map((moment) => ({
-			id: moment.id,
-			date: moment.event_date,
-			data: moment,
-		})),
-	);
-
-	const totalHeightVh = calculateTimelineHeight(timelineNodes);
-	const curvePoints = generateBaseCurve(totalHeightVh);
-
-	const itemPositions = calculateItemPositions(
-		timelineNodes,
-		totalHeightVh,
-		curvePoints,
-	);
-
+export default function HomePage() {
 	return (
-		<HomeView
-			curvePoints={curvePoints}
-			itemPositions={itemPositions}
-			timelineNodes={timelineNodes}
-			totalHeightVh={totalHeightVh}
-		/>
+		<main className="relative flex h-screen flex-col items-center justify-center gap-4 overflow-hidden px-4 py-6">
+			<BookView />
+		</main>
 	);
 }

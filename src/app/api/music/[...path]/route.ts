@@ -1,5 +1,5 @@
-import axios from "axios";
 import { type NextRequest, NextResponse } from "next/server";
+import { fetchDeezer } from "@/features/music/server";
 
 export async function GET(
 	request: NextRequest,
@@ -7,12 +7,9 @@ export async function GET(
 ) {
 	const { search } = new URL(request.url);
 	const { path } = await params;
-	const url = path.join("/");
 
 	try {
-		const response = await axios.get(`https://api.deezer.com/${url}${search}`);
-
-		return NextResponse.json(response.data);
+		return NextResponse.json(await fetchDeezer(path, search));
 	} catch (error) {
 		console.error("Deezer Proxy Error:", error);
 		return NextResponse.json(

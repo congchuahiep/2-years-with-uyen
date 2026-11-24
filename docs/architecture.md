@@ -145,10 +145,13 @@ Ghi lại để người sau không vô tình đưa chúng trở lại:
 
 - **Supabase** (Auth, Postgres, Storage) — thay bằng SQLite/Turso, session cookie và object storage.
 - **TanStack Query** — dữ liệu đọc ở Server Component, mutation ở Server Action. Lý do: DB nằm trên server, client không query được; giữ TanStack sẽ buộc phải dựng thêm một tầng API không cần thiết cho một app hai người dùng.
-- **Moment và toàn bộ UI timeline cũ** — nội dung cuốn sổ sẽ do feature `book` tự định nghĩa.
+- **Moment và các route/UI gắn với Moment** — trang chủ timeline cũ, form tạo Moment, modal chi tiết và toàn bộ hook/store liên quan đã bị xoá. Nội dung cuốn sổ sẽ do feature `book` tự định nghĩa.
 - **Quest / trivia / profile** — không còn là phần của ứng dụng.
 
-Timeline cuộn vẫn được giữ dưới dạng feature tái sử dụng (`features/timeline`), nhưng không còn biết `Moment` là gì: nó nhận danh sách item chung và hàm render do nơi dùng truyền vào.
+Hai thứ được giữ lại có chủ đích dưới dạng feature độc lập:
+
+- `features/timeline` — timeline cuộn, nhưng không còn biết `Moment` là gì: nó nhận danh sách item chung và hàm render do nơi dùng truyền vào.
+- `features/music` — tìm và phát nhạc qua Deezer, gồm component tìm kiếm, types và proxy phía server (`server.ts`, có `import "server-only"`). Route handler trong `app/api/music` chỉ còn là vỏ mỏng gọi vào feature.
 
 ## 10. Checklist khi thêm một feature
 

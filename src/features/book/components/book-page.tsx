@@ -1,9 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { forwardRef } from "react";
-import { route } from "@/configs/route";
 import type { BookPageItem } from "@/features/book/types";
 import { resolvePageItemPosition } from "@/features/book/types";
 import { Polaroid } from "@/shared/components/polaroid";
@@ -91,28 +89,21 @@ function ItemContent({ item }: { item: BookPageItem }) {
     moment.images?.find((image) => image.isMain) ?? moment.images?.[0];
 
   return (
-    <Link
-      key={moment.id}
-      href={route.moments.detail(moment.id)}
-      scroll={false}
-      className="pointer-events-auto block"
+    <Polaroid
+      text={moment.title}
+      className="rotate-(--moment-rotate) duration-150"
+      size="sm"
     >
-      <Polaroid
-        text={moment.title}
-        className="rotate-(--moment-rotate) hover:scale-102 duration-150"
-        size="sm"
-      >
-        {coverImage && (
-          <RoughBox className="size-full">
-            <Image
-              src={coverImage.url}
-              alt={moment.title}
-              className="object-cover -z-50 pointer-events-none"
-              fill
-            />
-          </RoughBox>
-        )}
-      </Polaroid>
-    </Link>
+      {coverImage && (
+        <RoughBox className="size-full">
+          <Image
+            src={coverImage.url}
+            alt={moment.title}
+            className="object-cover -z-50 pointer-events-none"
+            fill
+          />
+        </RoughBox>
+      )}
+    </Polaroid>
   );
 }

@@ -1,5 +1,5 @@
-import axios from "axios";
 import { type NextRequest, NextResponse } from "next/server";
+import { searchDeezer } from "@/features/music/server";
 
 export async function GET(request: NextRequest) {
 	const { searchParams } = new URL(request.url);
@@ -10,12 +10,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-		// Gọi trực tiếp đến Deezer API từ Server-side (không bị CORS)
-		const response = await axios.get(
-			`https://api.deezer.com/search?q=${encodeURIComponent(query)}`,
-		);
-
-		return NextResponse.json(response.data);
+		return NextResponse.json(await searchDeezer(query));
 	} catch (error) {
 		console.error("Deezer Proxy Error:", error);
 		return NextResponse.json(

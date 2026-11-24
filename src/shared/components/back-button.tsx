@@ -1,6 +1,6 @@
 "use client";
 
-import { useSafeBack } from "@/hooks/use-safe-back";
+import { useSafeBack } from "@/shared/hooks/use-safe-back";
 import { DoorOutIcon } from "@/shared/icons/door-out";
 import { Button } from "@/shared/components/button";
 

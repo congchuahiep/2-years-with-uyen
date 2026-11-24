@@ -109,12 +109,3 @@ export type BookData = {
 	pages: BookPairFlipPage[];
 	tabs: FlipTab[];
 };
-
-/** Tham số đặt/di chuyển item lên trang (dùng qua API service) */
-export type PlaceItemInput = {
-	pairPageId: string;
-	side: FlipSide;
-	itemType: PageItemType;
-	itemId: string;
-	position?: Partial<PageItemPosition>;
-};

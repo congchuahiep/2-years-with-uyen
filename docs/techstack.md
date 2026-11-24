@@ -1,29 +1,39 @@
-# Khái quát về Công nghệ cốt lõi của dự án
+# Công nghệ cốt lõi
 
-Tài liệu này mô tả chi tiết các công nghệ được sử dụng để phát triển hỗ trợ ứng dụng. Dự án "2 Years with Uyen" tập trung vào kiến trúc ứng dụng web hiện đại, tối ưu hóa cho Hiệu suất (Performance) và Trải nghiệm người dùng độc đáo thông qua hình ảnh thao tác kéo-thả.
+## Nền tảng
 
-## Frameworks và Nền tảng
-- **Next.js (App Router)**: Đây là framework cốt lõi của dự án theo kiến trúc React hiện đại (phiên bản mới nhất hỗ trợ App Router). Nó giúp quản lý Routing, Server Actions và tối ưu hóa SEO hoặc rendering các trang từ Server (SSR) để mang lại tốc độ load trang tối đa.
-- **React.js**: Thư viện giao diện chính giúp xây dựng các UI Components tương tác mạnh mẽ ở phía Client.
+- **Next.js 16 (App Router)** — routing, Server Components để đọc dữ liệu, Server Actions để ghi, `proxy.ts` thay cho middleware.
+- **React 19** và **TypeScript**.
+- Build và start chạy trên Node (`next build`, `next start`). `bun --bun next dev` chỉ dùng cho dev.
 
-## Ngôn ngữ và Kiểu dữ liệu
-- **TypeScript**: Ngôn ngữ chính giúp chuẩn hóa việc khai báo kiểu dữ liệu. Toàn bộ dự án được code bằng TypeScript để tránh lỗi Runtime về sau. Sử dụng các interface và types kết hợp chặt chẽ với Supabase.
+## Giao diện
 
-## Styling (Cách điểm trang)
-- **Tailwind CSS**: Framework CSS tiện ích (utility-first) cung cấp toàn bộ các classes tạo kiểu ngay tại code HTML/JSX của thành phần đó mà không cần đến các tệp `.css` thông thường.
-- **CSS Variables**: Tự do thiết lập hệ thống màu sắc qua biến CSS trong file global (từ đặc phái `globals.css`) chủ yếu cho màu sắc "Doodle".
-- **Motion (Framer Motion v12)**: Sử dụng cho Animations qua package `motion` (import từ `motion/react`), cụ thể là để xử lý việc di chuyển các bức ảnh trên Bảng Polaroid Board một cách mượt mà (Spring animation drag, drop, rotate).
+- **Tailwind CSS 4** với biến CSS trong `src/styles/globals.css`.
+- **tailwind-variants** — nguồn duy nhất cho `cn` và `tv`; không dùng `clsx`/`tailwind-merge` trực tiếp.
+- **motion** — animation lật trang, scroll timeline, drag.
+- **react-pageflip** — engine lật trang của cuốn sổ.
+- **Rough.js** và **react-rough-notation** — nét vẽ tay, gạch chân, khung ngoằn ngoèo.
+- Font viết tay (Pangolin, Fuzzy Bubbles, Corinthia) qua `next/font/google` trong `src/configs/font.ts`.
 
-## State, Data và Tương tác
-- **Zustand**: Quản lý state toàn cục cho Quest và Inventory (`src/stores/`).
-- **TanStack Query**: Fetch/cache dữ liệu phía client (`QueryProvider` ở `src/providers/query-provider.tsx`).
-- **@dnd-kit**: Kéo-thả cho trò chơi ghép hình (`src/components/puzzle-game.tsx`).
-- **@floating-ui/react**: Tooltip (hover) và modal nổi.
+## Dữ liệu
 
-## Cơ sở dữ liệu (Database và BaaS)
-- **Supabase**: Hệ thống lưu trữ phụ trợ hoàn thiện Backend (BaaS) dựa trên nền tảng PostgreSQL hoạt động tốt cùng kiến trúc Next.js.
-- **Supabase Storage**: Hệ thống phục vụ upload và trả về đường dẫn ảnh động, hữu dụng trong việc hỗ trợ form trang lưu lại Kỷ Niệm với đặc tả các tấm hình người dùng tải lên.
+- **SQLite** khi dev (`file:./data/app.db`) và **Turso** khi deploy — cùng một driver `@libsql/client`.
+- **Drizzle ORM** cho schema và truy vấn; **drizzle-kit** sinh migration vào `drizzle/`.
+- Kết nối nằm ở `src/db/client.ts`, có `import "server-only"`; schema ở `src/db/schema.ts`.
+- Không truy vấn DB từ client. Query thuộc feature nào nằm ở `server.ts` của feature đó.
 
-## Thư viện hỗ trợ Giao diện tay (Sketch)
-- **Rough.js**: Chính đây là thư viện cốt lõi mang đến giao diện "Vẽ tay" vào hệ thống các khối HTML như Các tấm Bảng, Nút bấm hoặc Thuyết minh bằng nét vẽ mộc.
-- **react-rough-notation**: Thư viện hỗ trợ gạch chân, tạo điểm nhấn đóng vai vai trò phân lưu bản text bằng những nét viết bút đa hướng trên mặt giấy.
+## Auth
+
+- Bảng `users` trong SQLite; mật khẩu hash bằng **scrypt** của Node (`node:crypto`).
+- Session là **JWT HS256** ký bằng `SESSION_SECRET`, lưu trong cookie `httpOnly`, `sameSite=lax`, 30 ngày.
+- `proxy.ts` chỉ verify chữ ký, không truy vấn DB.
+
+## Media (kế hoạch)
+
+- **Cloudinary** cho ảnh và video: `f_auto`/`q_auto` để trả WebP/AVIF, video hạ 720p/30fps.
+- Upload trực tiếp từ trình duyệt bằng chữ ký do server cấp, tránh giới hạn body của Vercel.
+- Chưa triển khai; schema nội dung sẽ được chốt cùng editor mới.
+
+## Đã loại bỏ có chủ đích
+
+Supabase (Auth/Postgres/Storage), TanStack Query, Moment, quest/trivia/profile, editor freeform cũ.

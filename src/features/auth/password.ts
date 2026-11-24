@@ -4,23 +4,22 @@ import { promisify } from "node:util";
 const scryptAsync = promisify(scrypt);
 const KEY_LENGTH = 64;
 
-/** Hash mật khẩu bằng scrypt của Node — không cần dependency native. */
 export async function hashPassword(password: string): Promise<string> {
-	const salt = randomBytes(16).toString("hex");
-	const derived = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
-	return `${salt}:${derived.toString("hex")}`;
+  const salt = randomBytes(16).toString("hex");
+  const derived = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
+  return `${salt}:${derived.toString("hex")}`;
 }
 
 export async function verifyPassword(
-	password: string,
-	stored: string,
+  password: string,
+  stored: string,
 ): Promise<boolean> {
-	const [salt, hash] = stored.split(":");
-	if (!salt || !hash) return false;
+  const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
 
-	const derived = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
-	const expected = Buffer.from(hash, "hex");
-	return (
-		expected.length === derived.length && timingSafeEqual(expected, derived)
-	);
+  const derived = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
+  const expected = Buffer.from(hash, "hex");
+  return (
+    expected.length === derived.length && timingSafeEqual(expected, derived)
+  );
 }

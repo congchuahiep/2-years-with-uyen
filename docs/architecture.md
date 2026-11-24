@@ -11,18 +11,12 @@ Tài liệu này là nguồn sự thật về cách tổ chức code của dự 
 ```text
 src/
 ├── app/                  # chỉ routing shell, file mỏng
+│   ├── page.tsx          # cuốn sổ
 │   ├── login/page.tsx
-│   ├── book/page.tsx
-│   └── api/media/[...key]/route.ts
+│   ├── maintenance/page.tsx
+│   └── api/music/...     # vỏ mỏng gọi features/music/server.ts
 ├── configs/              # hằng số dùng chung: font, route, env
-├── shared/               # dùng chung toàn dự án
-│   ├── components/       # doodle kit: rough-box, button, polaroid…
-│   ├── icons/            # toàn bộ icon, kể cả chưa dùng
-│   ├── providers/        # provider toàn cục
-│   ├── hooks/
-│   ├── types/
-│   ├── utils/            # cn, color, hash, audio
-│   └── db/               # client + schema + migrations (server-only)
+├── db/                   # client + schema Drizzle (server-only)
 ├── features/
 │   └── <tên-feature>/
 │       ├── components/
@@ -33,6 +27,13 @@ src/
 │       ├── actions.ts    # Server Actions — client được phép import
 │       ├── server.ts     # chỉ server dùng — client TUYỆT ĐỐI không import
 │       └── index.ts      # barrel công khai của feature
+├── shared/               # dùng chung toàn dự án, KHÔNG có barrel
+│   ├── components/       # doodle kit: rough-box, button, polaroid…
+│   ├── icons/            # toàn bộ icon, kể cả chưa dùng
+│   ├── providers/        # provider toàn cục
+│   ├── hooks/
+│   ├── types/
+│   └── utils/            # cn, color, hash, audio
 └── styles/
 ```
 
@@ -111,10 +112,10 @@ export async function movePageItem(input: MovePageItemInput) {
 
 ## 5. Tầng dữ liệu
 
-- `shared/db/client.ts` tạo kết nối lazy, bắt đầu bằng `import "server-only"`.
-- `shared/db/schema.ts` khai báo schema Drizzle.
+- `db/client.ts` tạo kết nối lazy, bắt đầu bằng `import "server-only"`.
+- `db/schema.ts` khai báo schema Drizzle.
 - `drizzle/` chứa migration SQL, sinh bằng `drizzle-kit` và commit vào repo.
-- Query thuộc feature nào thì nằm ở `server.ts` của feature đó, không nằm trong `shared/db`.
+- Query thuộc feature nào thì nằm ở `server.ts` của feature đó, không nằm trong `src/db`.
 - Khi đọc DB trong Server Component trên Next 16, gọi `connection()` trước truy vấn nếu driver là loại đồng bộ — Next có thể coi dữ liệu đó là tĩnh và prerender lúc build.
 
 ### 5.1 Biến môi trường
@@ -123,7 +124,7 @@ Ba biến bắt buộc khi chạy app: `DATABASE_URL` (file SQLite khi dev, `lib
 
 ### 5.2 Auth
 
-- Bảng `users` nằm trong `shared/db/schema.ts`; mật khẩu hash bằng scrypt của Node trong `features/auth/password.ts`.
+- Bảng `users` nằm trong `db/schema.ts`; mật khẩu hash bằng scrypt của Node trong `features/auth/password.ts`.
 - Session là JWT HS256 ký bằng `SESSION_SECRET`, lưu trong cookie `httpOnly` (`features/auth/session-token.ts` và `session.ts`).
 - `proxy.ts` chỉ verify chữ ký, không truy vấn DB, nên mỗi request không tốn round-trip tới Turso.
 - `login`/`logout` là Server Action trong `features/auth/actions.ts`.

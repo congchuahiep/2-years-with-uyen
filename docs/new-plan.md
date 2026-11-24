@@ -1,3 +1,5 @@
+> ⚠️ **Tài liệu lịch sử (đã lưu trữ).** Nội dung dưới đây là kế hoạch FlipBook thời Supabase, không còn phản ánh kiến trúc hiện tại. Xem [architecture.md](architecture.md) và [plan.md](plan.md).
+
 Xin chào, đây sẽ là phần kế hoạch mới cho dự án
 
 # Ý tưởng cũ

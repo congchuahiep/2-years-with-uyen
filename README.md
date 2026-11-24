@@ -1,20 +1,61 @@
-# 2 Years with Uyen - Sổ Lưu Niệm (Scrapbook)
+# 2 Years with Uyen — Sổ lưu niệm
 
-Dự án "2 Years with Uyen" là một ứng dụng web được phát triển nhằm mục đích lưu giữ và tái hiện lại các kỷ niệm hai năm yêu nhau dưới hình thức một cuốn sổ tay lưu niệm (Scrapbook) trực tuyến.
-Ứng dụng mang đến một trải nghiệm giao diện độc đáo với phong cách vẽ tay (Doodle), kết hợp cùng các hiệu ứng tương tác kéo-thả mượt mà, giúp người dùng có thể tự do thể hiện sự sáng tạo trong từng câu chuyện và khung hình.
+Ứng dụng web cá nhân làm món quà kỷ niệm 2 năm: một cuốn sổ lật (flipbook) phong cách doodle, chỉ hai người dùng truy cập được.
 
-## Tổng Quan Và Mục Đích
+## Trạng thái hiện tại
 
-Mục tiêu chính của dự án là xây dựng một không gian riêng tư, nơi mọi khoảnh khắc, từ những ngày đầu tiên hướng về nhau đến các sự kiện đặc biệt, được lưu lại an toàn và hiển thị dưới dòng thời gian (Timeline).
-Điểm khác biệt của dự án nằm ở cách tiếp cận tương tác với thư viện Rough.js, mô phỏng các đường nét ký họa, vết gạch xóa hay những miếng băng keo washi đặc trưng của trang nhật ký thủ công. Không chỉ là một nơi hoán đổi kỷ niệm trên nền tảng số linh hoạt, mà còn tập trung vào cảm xúc của các phần giao diện và chuyển động tự nhiên.
+- `/` mở cuốn sổ: bìa, 5 trang intro, trang kết. Sổ đang **read-only** — editor và mô hình nội dung đang được thiết kế lại nên chưa có trang động.
+- `/login` xác thực email/mật khẩu với bảng `users` trong SQLite; session là cookie JWT.
+- `/maintenance` dùng khi bật `MAINTENANCE_MODE=true`.
+- Hai feature được giữ lại nhưng chưa route tới: `features/timeline` (timeline cuộn generic) và `features/music` (tìm/phát nhạc qua Deezer).
 
-## Hệ thống Tài liệu Dự án (Documentation)
+## Tech stack
 
-Để dễ dàng hơn trong việc tiếp cận mã nguồn cho các lập trình viên (hoặc hệ thống thông minh sau này), toàn bộ kiến thức và quy tắc thể hiện của dự án được hệ thống hóa tại thư mục [docs](docs/). Hãy đọc các file trong `docs/` trước khi bắt đầu phát triển — đặc biệt là `docs/techstack.md`, `docs/style.md` và `docs/structure.md`.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 + tailwind-variants · motion · react-pageflip · Rough.js · SQLite/Turso qua Drizzle + `@libsql/client` · `jose` + scrypt cho auth.
 
-## Cài Đặt Và Khởi Chạy
+## Cấu trúc
 
-Để khởi chạy dự án trên máy tính cá nhân, cần đảm bảo việc cài đặt công cụ quản lý Node và chạy các lệnh sau:
-Đầu tiên kéo dự án và di chuyển đến thư mục làm việc.
-Sau đó cài đặt toàn bộ thư viện cần thiết qua chức năng của npm hoặc bun.
-Cuối cùng, khởi chạy server ở chế độ nhà phát triển hoặc sử dụng mã xác thực local. Sử dụng lệnh `bun run dev` và truy cập localhost tại cổng mặc định để mở dự án trên trang web. Trình duyệt URL chính để cảm nhận thiết kế sổ tay.
+```text
+src/
+├── app/        # route mỏng: /, /login, /maintenance, /api/music
+├── configs/    # env, font, route
+├── db/         # schema + client Drizzle (server-only)
+├── features/   # auth, book, music, timeline
+└── shared/     # components, hooks, icons, providers, types, utils
+```
+
+Quy ước chi tiết nằm ở [docs/architecture.md](docs/architecture.md). Đọc file đó trước khi thêm code.
+
+## Chạy local
+
+```bash
+bun install
+cp .env.example .env
+# sửa .env: SESSION_SECRET (tối thiểu 32 ký tự), DATABASE_URL trỏ tới `file:./data/app.db`
+bun run db:migrate
+SEED_EMAIL=ban@example.com SEED_PASSWORD="..." SEED_NAME="Hiệp" bun run db:seed
+bun run dev
+```
+
+Mặc định `DATABASE_URL` trỏ tới `file:./data/app.db` và tạo file trong `data/` (đã gitignore). Khi dùng Turso, đổi URL, thêm `DATABASE_AUTH_TOKEN`, rồi chạy lại `db:migrate`.
+
+## Scripts
+
+| Lệnh | Việc |
+|---|---|
+| `bun run dev` | Next dev dưới Bun |
+| `bun run build` | Next build dưới Node |
+| `bun run lint` | ESLint |
+| `bun run db:generate` | Sinh migration từ schema |
+| `bun run db:migrate` | Áp migration |
+| `bun run db:seed` | Tạo/cập nhật một tài khoản |
+
+## Nhánh
+
+- `rewrite/book-sqlite` — nhánh refactor hiện tại.
+- `old-design` — bản cũ (timeline, Moment, Supabase), giữ làm tham chiếu.
+- `main` — đích đến khi refactor xong.
+
+## Tài liệu
+
+[architecture.md](docs/architecture.md) (quy ước bắt buộc) · [techstack.md](docs/techstack.md) · [structure.md](docs/structure.md) · [features.md](docs/features.md) · [plan.md](docs/plan.md). `docs/new-plan.md` là kế hoạch lịch sử của thời FlipBook + Supabase, không còn hiệu lực.

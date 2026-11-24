@@ -3,7 +3,7 @@ import { createClient } from "@libsql/client";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import { hashPassword } from "../src/features/auth/password";
-import { users } from "../src/shared/db/schema";
+import { users } from "../src/db/schema";
 
 const email = process.env.SEED_EMAIL?.trim().toLowerCase();
 const password = process.env.SEED_PASSWORD;

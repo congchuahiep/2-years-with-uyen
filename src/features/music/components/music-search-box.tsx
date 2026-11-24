@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,17 +27,33 @@ export function MusicSearchBox({ onTrackSelect }: MusicSearchBoxProps) {
 	const debouncedSearchTerm = useDebounce(searchTerm, 500);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 
-	const { data: tracks = [], isLoading } = useQuery({
-		queryKey: ["deezer-search", debouncedSearchTerm],
-		queryFn: async () => {
-			if (!debouncedSearchTerm) return [];
-			const response = await dezzerApi.get<{ data: DeezerTrack[] }>(
-				dezzerEndpoint.search(debouncedSearchTerm),
-			);
-			return response.data.data || [];
-		},
-		enabled: !!debouncedSearchTerm,
-	});
+	const [tracks, setTracks] = useState<DeezerTrack[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+
+	useEffect(() => {
+		if (!debouncedSearchTerm) {
+			setTracks([]);
+			return;
+		}
+
+		let cancelled = false;
+		setIsLoading(true);
+		dezzerApi
+			.get<{ data: DeezerTrack[] }>(dezzerEndpoint.search(debouncedSearchTerm))
+			.then((response) => {
+				if (!cancelled) setTracks(response.data.data || []);
+			})
+			.catch(() => {
+				if (!cancelled) setTracks([]);
+			})
+			.finally(() => {
+				if (!cancelled) setIsLoading(false);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [debouncedSearchTerm]);
 
 	// Cleanup audio when component unmounts or modal closes
 	useEffect(() => {

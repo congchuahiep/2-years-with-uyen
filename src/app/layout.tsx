@@ -4,7 +4,6 @@ import { MuteButton } from "@/shared/components/mute-button";
 import { corinthia, fuzzyBubbles, pangolin } from "@/configs/font";
 import { AudioPreloaderProvider } from "@/shared/providers/audio-preloader-provider";
 import { ModalContentWrapper, ModalProvider } from "@/shared/providers/modal-provider";
-import QueryProvider from "@/shared/providers/query-provider";
 
 export const metadata: Metadata = {
   title: "2 năm cùng nhau",
@@ -22,16 +21,14 @@ export default function RootLayout({
       className={`${fuzzyBubbles.variable} ${pangolin.variable} ${corinthia.variable}`}
     >
       <body className={`antialiased bg-purple-400 overflow-hidden`}>
-        <QueryProvider>
-          <AudioPreloaderProvider>
-            <ModalProvider>
-              <ModalContentWrapper>
-                <MuteButton className="fixed bottom-4 left-4 z-50" />
-                {children}
-              </ModalContentWrapper>
-            </ModalProvider>
-          </AudioPreloaderProvider>
-        </QueryProvider>
+        <AudioPreloaderProvider>
+          <ModalProvider>
+            <ModalContentWrapper>
+              <MuteButton className="fixed bottom-4 left-4 z-50" />
+              {children}
+            </ModalContentWrapper>
+          </ModalProvider>
+        </AudioPreloaderProvider>
       </body>
     </html>
   );

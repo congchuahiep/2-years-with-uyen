@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { BookView } from "@/features/book";
+import { logout } from "@/features/auth";
+import { Book } from "@/features/book";
 
 export const metadata: Metadata = {
 	title: "Sổ kỷ niệm",
@@ -9,7 +10,15 @@ export const metadata: Metadata = {
 export default function HomePage() {
 	return (
 		<main className="relative flex h-screen flex-col items-center justify-center gap-4 overflow-hidden px-4 py-6">
-			<BookView />
+			<Book pages={[]} />
+			<form action={logout} className="absolute right-4 bottom-4">
+				<button
+					type="submit"
+					className="text-sm font-bold text-purple-100/80 hover:text-purple-100"
+				>
+					Đăng xuất
+				</button>
+			</form>
 		</main>
 	);
 }

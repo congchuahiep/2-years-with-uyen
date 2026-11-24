@@ -111,11 +111,23 @@ export async function movePageItem(input: MovePageItemInput) {
 
 ## 5. Tầng dữ liệu
 
-- `shared/db/client.ts` tạo kết nối duy nhất, bắt đầu bằng `import "server-only"`.
+- `shared/db/client.ts` tạo kết nối lazy, bắt đầu bằng `import "server-only"`.
 - `shared/db/schema.ts` khai báo schema Drizzle.
-- `shared/db/migrations/` chứa migration SQL, sinh bằng `drizzle-kit` và commit vào repo.
+- `drizzle/` chứa migration SQL, sinh bằng `drizzle-kit` và commit vào repo.
 - Query thuộc feature nào thì nằm ở `server.ts` của feature đó, không nằm trong `shared/db`.
 - Khi đọc DB trong Server Component trên Next 16, gọi `connection()` trước truy vấn nếu driver là loại đồng bộ — Next có thể coi dữ liệu đó là tĩnh và prerender lúc build.
+
+### 5.1 Biến môi trường
+
+Ba biến bắt buộc khi chạy app: `DATABASE_URL` (file SQLite khi dev, `libsql://...` khi dùng Turso), `DATABASE_AUTH_TOKEN` (chỉ Turso mới cần) và `SESSION_SECRET` (tối thiểu 32 ký tự). `.env` không commit; `.env.example` là mẫu. `configs/env.ts` đọc biến **lazy** — không kiểm tra lúc import — để `next build` không đòi secret.
+
+### 5.2 Auth
+
+- Bảng `users` nằm trong `shared/db/schema.ts`; mật khẩu hash bằng scrypt của Node trong `features/auth/password.ts`.
+- Session là JWT HS256 ký bằng `SESSION_SECRET`, lưu trong cookie `httpOnly` (`features/auth/session-token.ts` và `session.ts`).
+- `proxy.ts` chỉ verify chữ ký, không truy vấn DB, nên mỗi request không tốn round-trip tới Turso.
+- `login`/`logout` là Server Action trong `features/auth/actions.ts`.
+- Tạo tài khoản bằng script, không hard-code mật khẩu: `SEED_EMAIL=... SEED_PASSWORD=... bun run db:seed`.
 
 ## 6. Styling
 

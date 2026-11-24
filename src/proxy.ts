@@ -1,30 +1,38 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { updateSession } from "@/utils/supabase/proxy";
+import {
+	SESSION_COOKIE,
+	verifySessionToken,
+} from "@/features/auth/session-token";
 
 export async function proxy(request: NextRequest) {
-	// Kiểm tra nếu biến môi trường MAINTENANCE_MODE được bật
-	if (process.env.MAINTENANCE_MODE === "true") {
-		// Tránh lỗi loop chuyển hướng vô hạn khi user đã ở trang /maintenance
-		if (!request.nextUrl.pathname.startsWith("/maintenance")) {
-			const maintenanceUrl = new URL("/maintenance", request.url);
-			return NextResponse.redirect(maintenanceUrl);
-		}
+	const { pathname } = request.nextUrl;
+
+	// Bảo trì: chặn mọi route trừ chính trang bảo trì.
+	if (
+		process.env.MAINTENANCE_MODE === "true" &&
+		!pathname.startsWith("/maintenance")
+	) {
+		return NextResponse.redirect(new URL("/maintenance", request.url));
 	}
 
-	// Nếu đang không bảo trì, tiếp tục kiểm tra Auth Session của Supabase
-	return await updateSession(request);
+	const token = request.cookies.get(SESSION_COOKIE)?.value;
+	const session = token ? await verifySessionToken(token) : null;
+
+	if (pathname.startsWith("/login")) {
+		return session
+			? NextResponse.redirect(new URL("/", request.url))
+			: NextResponse.next();
+	}
+
+	if (!session && !pathname.startsWith("/maintenance")) {
+		return NextResponse.redirect(new URL("/login", request.url));
+	}
+
+	return NextResponse.next();
 }
 
-// Cấu hình matcher để chỉ chạy trên các route nhất định
 export const config = {
 	matcher: [
-		/*
-		 * Bỏ qua paths bắt đầu với:
-		 * - _next/static (static files)
-		 * - _next/image (image optimization files)
-		 * - favicon.ico (favicon file)
-		 * - images, svgs...
-		 */
-		"/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+		"/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
 	],
 };

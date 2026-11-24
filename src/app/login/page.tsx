@@ -8,10 +8,10 @@ import { ErrorMessageBox } from "@/shared/components/error-message-box";
 import { Input } from "@/shared/components/input";
 import { RoughBox } from "@/shared/components/rough-box";
 import { Spinner } from "@/shared/components/spinner";
-import { type ActionState, login } from "./actions";
+import { type AuthState, login } from "@/features/auth";
 
 export default function LoginPage() {
-	const [state, action, pending] = useActionState<ActionState, FormData>(
+	const [state, action, pending] = useActionState<AuthState, FormData>(
 		login,
 		null,
 	);

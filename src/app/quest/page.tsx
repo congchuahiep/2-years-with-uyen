@@ -2,17 +2,17 @@
 
 import { QuestView } from "@/app/quest/view";
 import { BackButton } from "@/components/back-button";
-import { KeyIcon } from "@/components/icon/key";
-import { LockIcon } from "@/components/icon/lock-icon";
+import { KeyIcon } from "@/shared/icons/key";
+import { LockIcon } from "@/shared/icons/lock-icon";
 import { PuzzleGame } from "@/components/puzzle-game";
 import { QuestGuard } from "@/components/quest-guard";
-import { HoverTooltip } from "@/components/ui/hover-tooltip";
-import MinecraftChest from "@/components/ui/minecraft-chest";
-import { RoughBox } from "@/components/ui/rough-box";
-import { RoughTag } from "@/components/ui/rough-tag";
+import { HoverTooltip } from "@/shared/components/hover-tooltip";
+import MinecraftChest from "@/shared/components/minecraft-chest";
+import { RoughBox } from "@/shared/components/rough-box";
+import { RoughTag } from "@/shared/components/rough-tag";
 import { useQuestStore } from "@/hooks/use-quest-store";
 import { QuestID } from "@/types/quest";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 
 export default function QuestPage() {
 	const completeQuest = useQuestStore((state) => state.completeQuest);

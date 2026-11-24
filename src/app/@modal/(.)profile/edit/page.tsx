@@ -4,10 +4,10 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import EditProfileView from "@/app/profile/edit/view";
-import { Modal } from "@/components/ui/modal";
-import { Spinner } from "@/components/ui/spinner";
+import { Modal } from "@/shared/components/modal";
+import { Spinner } from "@/shared/components/spinner";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 
 export default function EditProfileModalPage() {
 	const router = useRouter();

@@ -1,6 +1,6 @@
 import type { JSX } from "react";
-import { KeyIcon } from "@/components/icon/key";
-import { Turntable } from "@/components/icon/turntable-icon";
+import { KeyIcon } from "@/shared/icons/key";
+import { Turntable } from "@/shared/icons/turntable-icon";
 
 export enum InventoryItemID {
 	SpecialKey = "SPECIAL_KEY",

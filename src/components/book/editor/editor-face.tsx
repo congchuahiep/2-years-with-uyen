@@ -7,8 +7,8 @@ import { route } from "@/configs/route";
 import { useMovePageItem, useRemovePageItem } from "@/hooks/use-flipbook-mutations";
 import { resolvePageItemPosition } from "@/types/flipbook";
 import type { BookPageItem, FlipSide, PageItemPosition } from "@/types/flipbook";
-import { Polaroid } from "@/components/ui/polaroid";
-import { RoughBox } from "@/components/ui/rough-box";
+import { Polaroid } from "@/shared/components/polaroid";
+import { RoughBox } from "@/shared/components/rough-box";
 import { BlankBookPage } from "../blank-book-page";
 import { getStickerIcon } from "./sticker-catalog";
 

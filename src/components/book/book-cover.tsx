@@ -1,8 +1,8 @@
 "use client";
 
 import { forwardRef } from "react";
-import cn from "@/utils/cn";
-import { RoughBox } from "../ui/rough-box";
+import cn from "@/shared/utils/cn";
+import { RoughBox } from "@/shared/components/rough-box";
 
 export const BookCover = forwardRef<
 	HTMLDivElement,

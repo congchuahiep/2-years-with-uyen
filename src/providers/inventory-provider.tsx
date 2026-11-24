@@ -3,7 +3,7 @@
 import { createContext, useEffect, useState } from "react";
 import { DevOnly } from "@/components/dev/dev-only";
 import { InventoryDevPanel } from "@/components/dev/inventory-dev-panel";
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "@/shared/components/spinner";
 import { useUpdateInventory } from "@/hooks/use-update-inventory";
 import {
 	createInventoryStore,

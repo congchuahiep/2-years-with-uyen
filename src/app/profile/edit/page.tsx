@@ -1,9 +1,9 @@
 "use client";
 
 import { BackButton } from "@/components/back-button";
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "@/shared/components/spinner";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 import EditProfileView from "./view";
 
 export default function EditProfilePage() {

@@ -1,4 +1,4 @@
-import { RoughBox } from "@/components/ui/rough-box";
+import { RoughBox } from "@/shared/components/rough-box";
 export default function MaintenancePage() {
 	return (
 		<main className="flex h-screen w-full flex-col items-center justify-center p-8 bg-purple-400">

@@ -4,8 +4,8 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { QuestView } from "@/app/quest/view";
-import { Modal } from "@/components/ui/modal";
-import cn from "@/utils/cn";
+import { Modal } from "@/shared/components/modal";
+import cn from "@/shared/utils/cn";
 
 export default function QuestModalPage() {
 	const router = useRouter();

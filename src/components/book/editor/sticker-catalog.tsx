@@ -1,9 +1,9 @@
 import type { JSX } from "react";
-import { BowIcon } from "@/components/icon/bow";
-import { DaisyIcon } from "@/components/icon/daisy";
-import { HeartIcon } from "@/components/icon/heart";
-import { ShootingStarIcon } from "@/components/icon/shooting-star";
-import { StarIcon } from "@/components/icon/star";
+import { BowIcon } from "@/shared/icons/bow";
+import { DaisyIcon } from "@/shared/icons/daisy";
+import { HeartIcon } from "@/shared/icons/heart";
+import { ShootingStarIcon } from "@/shared/icons/shooting-star";
+import { StarIcon } from "@/shared/icons/star";
 
 /**
  * Catalog sticker — danh sách sticker người dùng có thể kéo lên trang.

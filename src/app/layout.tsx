@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { MuteButton } from "@/components/mute-button";
 import { corinthia, fuzzyBubbles, pangolin } from "@/configs/font";
-import { AudioPreloaderProvider } from "@/providers/audio-preloader-provider";
+import { AudioPreloaderProvider } from "@/shared/providers/audio-preloader-provider";
 import { InventoryProvider } from "@/providers/inventory-provider";
-import { ModalContentWrapper, ModalProvider } from "@/providers/modal-provider";
+import { ModalContentWrapper, ModalProvider } from "@/shared/providers/modal-provider";
 import QueryProvider from "@/providers/query-provider";
 import { QuestProvider } from "@/providers/quest-provider";
 

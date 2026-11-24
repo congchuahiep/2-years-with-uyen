@@ -9,10 +9,10 @@ import {
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import { playSound } from "@/utils/audio";
-import cn from "@/utils/cn";
+import { playSound } from "@/shared/utils/audio";
+import cn from "@/shared/utils/cn";
 
-import { RoughBox } from "./ui/rough-box";
+import { RoughBox } from "@/shared/components/rough-box";
 
 type Piece = {
 	id: number;

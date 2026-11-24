@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import { forwardRef } from "react";
-import { DaisyIcon } from "@/components/icon/daisy";
-import { HeartIcon } from "@/components/icon/heart";
-import { ShootingStarIcon } from "@/components/icon/shooting-star";
-import { StarIcon } from "@/components/icon/star";
-import { Polaroid } from "@/components/ui/polaroid";
-import { RoughBox } from "@/components/ui/rough-box";
+import { DaisyIcon } from "@/shared/icons/daisy";
+import { HeartIcon } from "@/shared/icons/heart";
+import { ShootingStarIcon } from "@/shared/icons/shooting-star";
+import { StarIcon } from "@/shared/icons/star";
+import { Polaroid } from "@/shared/components/polaroid";
+import { RoughBox } from "@/shared/components/rough-box";
 import { BookCover } from "../book-cover";
 
 export const FrontBookCover = forwardRef<HTMLDivElement>((_, ref) => {

@@ -3,7 +3,7 @@
 import { createContext, type ReactNode, useEffect, useState } from "react";
 import { DevOnly } from "@/components/dev/dev-only";
 import { QuestDevPanel } from "@/components/dev/quest-dev-panel";
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "@/shared/components/spinner";
 import { useUpdateCompletedQuests } from "@/hooks/use-update-completed-quests";
 import { createQuestStore, type QuestStoreApi } from "@/stores/quest-store";
 import { createClient } from "@/utils/supabase/client";

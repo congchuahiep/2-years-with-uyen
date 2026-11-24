@@ -10,11 +10,11 @@ import {
 } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { cn } from "tailwind-variants";
-import { ArrowIcon } from "@/components/icon/arrow";
-import { Button } from "@/components/ui/button";
+import { ArrowIcon } from "@/shared/icons/arrow";
+import { Button } from "@/shared/components/button";
 import type { BookPairFlipPage } from "@/types/flipbook";
-import { playSound } from "@/utils/audio";
-import { PencilIcon } from "../icon/pencil";
+import { playSound } from "@/shared/utils/audio";
+import { PencilIcon } from "@/shared/icons/pencil";
 import { BookCover } from "./book-cover";
 import { BookPage } from "./book-page";
 import {

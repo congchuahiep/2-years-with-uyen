@@ -12,9 +12,9 @@ import { useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import type { Options } from "roughjs/bin/core";
 import { route } from "@/configs/route";
-import { useModal } from "@/providers/modal-provider";
+import { useModal } from "@/shared/providers/modal-provider";
 import type { TimelineItem, TimelinePoint } from "@/types/timeline";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 import { MomentItem } from "./moment-item";
 import { YearIndicatorItem } from "./year-indicator-item";
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { Book } from "@/components/book/book";
-import { PaletteIcon } from "@/components/icon/palette-icon";
-import { ErrorMessageBox } from "@/components/ui/error-message-box";
-import { Spinner } from "@/components/ui/spinner";
+import { PaletteIcon } from "@/shared/icons/palette-icon";
+import { ErrorMessageBox } from "@/shared/components/error-message-box";
+import { Spinner } from "@/shared/components/spinner";
 import { useFlipBook } from "@/hooks/use-flipbook";
 
 /**

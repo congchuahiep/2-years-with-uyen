@@ -9,12 +9,12 @@ import { dezzerApi } from "@/configs/api";
 import { dezzerEndpoint } from "@/configs/endpoint";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { DeezerTrack } from "@/types/dezzer";
-import cn from "@/utils/cn";
-import { PauseIcon } from "./icon/pause-icon";
-import { PlayIcon } from "./icon/play-icon";
-import { Input } from "./ui/input";
-import { RoughBox } from "./ui/rough-box";
-import { Spinner } from "./ui/spinner";
+import cn from "@/shared/utils/cn";
+import { PauseIcon } from "@/shared/icons/pause-icon";
+import { PlayIcon } from "@/shared/icons/play-icon";
+import { Input } from "@/shared/components/input";
+import { RoughBox } from "@/shared/components/rough-box";
+import { Spinner } from "@/shared/components/spinner";
 
 interface MusicSearchBoxProps {
 	onTrackSelect?: (track: DeezerTrack) => void;

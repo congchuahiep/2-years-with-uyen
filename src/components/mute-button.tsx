@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import rough from "roughjs";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 
 export function MuteButton({ className }: { className?: string }) {
 	const [isMuted, setIsMuted] = useState(false);

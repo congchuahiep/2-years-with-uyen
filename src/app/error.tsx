@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { RoughBox } from "@/components/ui/rough-box";
+import { Button } from "@/shared/components/button";
+import { RoughBox } from "@/shared/components/rough-box";
 
 export default function ErrorPage({
 	error,

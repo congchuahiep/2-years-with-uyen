@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { RoughBox } from "@/components/ui/rough-box";
+import { RoughBox } from "@/shared/components/rough-box";
 import type { RichMoment } from "@/types/moment";
 import { createClient } from "@/utils/supabase/server";
 

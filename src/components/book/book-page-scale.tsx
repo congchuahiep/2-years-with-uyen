@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, type ReactNode, useEffect, useRef, useState } from "react";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 
 /** Kích thước thiết kế chuẩn của một mặt trang (px) — mọi nội dung đều dàn layout theo kích thước này */
 export const BOOK_PAGE_DESIGN_WIDTH = 520;

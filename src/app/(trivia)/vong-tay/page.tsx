@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Turntable } from "@/components/icon/turntable-icon";
-import { HoverTooltip } from "@/components/ui/hover-tooltip";
+import { Turntable } from "@/shared/icons/turntable-icon";
+import { HoverTooltip } from "@/shared/components/hover-tooltip";
 import { useInventoryStore } from "@/hooks/use-inventory-store";
 import { useQuestStore } from "@/hooks/use-quest-store";
 import { InventoryItemID } from "@/types/inventory";

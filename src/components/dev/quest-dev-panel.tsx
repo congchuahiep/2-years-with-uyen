@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useQuestStore } from "@/hooks/use-quest-store";
 import { ALL_QUESTS, type QuestID } from "@/types/quest";
-import cn from "@/utils/cn";
-import { Button } from "../ui/button";
+import cn from "@/shared/utils/cn";
+import { Button } from "@/shared/components/button";
 
 export function QuestDevPanel() {
 	const [isOpen, setIsOpen] = useState(false);

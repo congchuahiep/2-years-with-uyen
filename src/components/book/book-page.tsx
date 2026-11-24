@@ -6,8 +6,8 @@ import { forwardRef } from "react";
 import { route } from "@/configs/route";
 import type { BookPageItem } from "@/types/flipbook";
 import { resolvePageItemPosition } from "@/types/flipbook";
-import { Polaroid } from "../ui/polaroid";
-import { RoughBox } from "../ui/rough-box";
+import { Polaroid } from "@/shared/components/polaroid";
+import { RoughBox } from "@/shared/components/rough-box";
 import { BlankBookPage } from "./blank-book-page";
 import { BookNumber } from "./static-element/book-number";
 

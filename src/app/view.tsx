@@ -4,9 +4,9 @@ import { AnimatePresence, useMotionValueEvent, useScroll } from "motion/react";
 import { useState } from "react";
 import { HeroSection } from "@/components/hero-section";
 import { Timeline } from "@/components/timeline-curve";
-import { useModal } from "@/providers/modal-provider";
+import { useModal } from "@/shared/providers/modal-provider";
 import type { TimelineItem, TimelinePoint } from "@/types/timeline";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 import { HomeToolbar } from "./toolbar";
 
 interface HomeContentProps {

@@ -3,7 +3,7 @@ import {
 	type CreateMomentPayload,
 	createMoment,
 } from "@/app/moments/create/actions";
-import type { Color } from "@/types/color";
+import type { Color } from "@/shared/types/color";
 import type { DeezerTrack } from "@/types/dezzer";
 import type { Moment } from "@/types/moment";
 import type { PolaroidImage } from "@/types/polaroid";

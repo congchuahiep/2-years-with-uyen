@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import type { Color } from "@/types/color";
+import type { Color } from "@/shared/types/color";
 import type { DeezerTrack } from "@/types/dezzer";
 import type { PolaroidImage } from "@/types/polaroid";
 import { createClient } from "@/utils/supabase/server";

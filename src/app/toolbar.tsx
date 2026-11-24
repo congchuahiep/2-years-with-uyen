@@ -2,20 +2,20 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { LockIcon } from "@/components/icon/lock-icon";
-import { PencilIcon } from "@/components/icon/pencil";
-import { QuestIcon } from "@/components/icon/quest";
-import { UserIcon } from "@/components/icon/user-icon";
+import { LockIcon } from "@/shared/icons/lock-icon";
+import { PencilIcon } from "@/shared/icons/pencil";
+import { QuestIcon } from "@/shared/icons/quest";
+import { UserIcon } from "@/shared/icons/user-icon";
 import { QuestGuard } from "@/components/quest-guard";
-import Float from "@/components/ui/float";
-import { HoverTooltip } from "@/components/ui/hover-tooltip";
-import MinecraftChest from "@/components/ui/minecraft-chest";
-import { RoughBox } from "@/components/ui/rough-box";
-import { RoughTag } from "@/components/ui/rough-tag";
+import Float from "@/shared/components/float";
+import { HoverTooltip } from "@/shared/components/hover-tooltip";
+import MinecraftChest from "@/shared/components/minecraft-chest";
+import { RoughBox } from "@/shared/components/rough-box";
+import { RoughTag } from "@/shared/components/rough-tag";
 import { route } from "@/configs/route";
 import { QuestID } from "@/types/quest";
-import { playSound } from "@/utils/audio";
-import cn from "@/utils/cn";
+import { playSound } from "@/shared/utils/audio";
+import cn from "@/shared/utils/cn";
 import { useInventoryStore } from "@/hooks/use-inventory-store";
 import { ALL_INVENTORY_ITEMS } from "@/types/inventory";
 

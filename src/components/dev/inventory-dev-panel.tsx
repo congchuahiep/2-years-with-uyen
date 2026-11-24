@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useInventoryStore } from "@/hooks/use-inventory-store";
 import { ALL_INVENTORY_ITEMS, type InventoryItemID } from "@/types/inventory";
-import cn from "@/utils/cn";
-import { Button } from "../ui/button";
+import cn from "@/shared/utils/cn";
+import { Button } from "@/shared/components/button";
 
 export function InventoryDevPanel() {
 	const [isOpen, setIsOpen] = useState(false);

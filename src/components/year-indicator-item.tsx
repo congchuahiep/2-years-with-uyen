@@ -1,7 +1,7 @@
 "use client";
 
 import { type MotionValue, motion, useTransform } from "motion/react";
-import { RoughBox } from "./ui/rough-box";
+import { RoughBox } from "@/shared/components/rough-box";
 
 interface YearIndicatorItemProps {
 	year: number;

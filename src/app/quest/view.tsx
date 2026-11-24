@@ -2,17 +2,17 @@
 
 import { useMemo, useRef, useState } from "react";
 import { RoughNotation } from "react-rough-notation";
-import { ArrowIcon } from "@/components/icon/arrow";
+import { ArrowIcon } from "@/shared/icons/arrow";
 import { QuestGuard } from "@/components/quest-guard";
-import { BinderPaper } from "@/components/ui/binder-paper";
-import { Button } from "@/components/ui/button";
+import { BinderPaper } from "@/shared/components/binder-paper";
+import { Button } from "@/shared/components/button";
 import {
 	type ContentChunk,
 	useContentPagination,
 } from "@/hooks/use-content-pagination";
 import { useQuestStore } from "@/hooks/use-quest-store";
 import { ALL_QUESTS, type Quest, QuestID } from "@/types/quest";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 
 const renderChunk = (chunk: ContentChunk) => {
 	if (chunk.type === "title") {

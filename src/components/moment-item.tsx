@@ -4,9 +4,9 @@ import { type MotionValue, motion, useTransform } from "motion/react";
 import Image from "next/image";
 import { useMemo } from "react";
 import type { RichMoment } from "@/types/moment";
-import cn from "@/utils/cn";
-import { Polaroid } from "./ui/polaroid";
-import { RoughBox } from "./ui/rough-box";
+import cn from "@/shared/utils/cn";
+import { Polaroid } from "@/shared/components/polaroid";
+import { RoughBox } from "@/shared/components/rough-box";
 
 function formatDate(dateStr: string): string {
 	const date = new Date(dateStr);

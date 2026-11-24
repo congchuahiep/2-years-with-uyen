@@ -5,16 +5,16 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Turntable } from "@/components/icon/turntable-icon";
+import { Turntable } from "@/shared/icons/turntable-icon";
 import { PolaroidViewer } from "@/components/polaroid-viewer";
-import Float from "@/components/ui/float";
-import { Modal } from "@/components/ui/modal";
-import { RoughBox } from "@/components/ui/rough-box";
+import Float from "@/shared/components/float";
+import { Modal } from "@/shared/components/modal";
+import { RoughBox } from "@/shared/components/rough-box";
 import { dezzerApi } from "@/configs/api";
 import { dezzerEndpoint } from "@/configs/endpoint";
 import type { DeezerTrack } from "@/types/dezzer";
 import type { RichMoment } from "@/types/moment";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 
 interface ModalMomentDetailContentProps {
 	moment: RichMoment;

@@ -1,4 +1,4 @@
-import type { Color } from "./color";
+import type { Color } from "@/shared/types/color";
 import type { DeezerTrack } from "./dezzer";
 import type { PolaroidImage } from "./polaroid";
 import type { UserProfile } from "./user-profile";

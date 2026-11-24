@@ -1,7 +1,7 @@
 import confetti from "canvas-confetti";
 import { createStore } from "zustand";
 import { ALL_QUESTS, type QuestID } from "@/types/quest";
-import { playSound } from "@/utils/audio";
+import { playSound } from "@/shared/utils/audio";
 
 export interface QuestStoreOptions {
 	onUpdateCompletedQuests: (allCompleted: QuestID[]) => void;

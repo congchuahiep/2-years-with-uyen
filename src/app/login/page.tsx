@@ -2,12 +2,12 @@
 
 import { useActionState } from "react";
 import { RoughNotation } from "react-rough-notation";
-import { LockIcon } from "@/components/icon/lock-icon";
-import { Button } from "@/components/ui/button";
-import { ErrorMessageBox } from "@/components/ui/error-message-box";
-import { Input } from "@/components/ui/input";
-import { RoughBox } from "@/components/ui/rough-box";
-import { Spinner } from "@/components/ui/spinner";
+import { LockIcon } from "@/shared/icons/lock-icon";
+import { Button } from "@/shared/components/button";
+import { ErrorMessageBox } from "@/shared/components/error-message-box";
+import { Input } from "@/shared/components/input";
+import { RoughBox } from "@/shared/components/rough-box";
+import { Spinner } from "@/shared/components/spinner";
 import { type ActionState, login } from "./actions";
 
 export default function LoginPage() {

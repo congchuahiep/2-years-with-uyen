@@ -1,8 +1,8 @@
 "use client";
 
 import { useSafeBack } from "@/hooks/use-safe-back";
-import { DoorOutIcon } from "./icon/door-out";
-import { Button } from "./ui/button";
+import { DoorOutIcon } from "@/shared/icons/door-out";
+import { Button } from "@/shared/components/button";
 
 export function BackButton({ children }: { children?: React.ReactNode }) {
 	const safeBack = useSafeBack();

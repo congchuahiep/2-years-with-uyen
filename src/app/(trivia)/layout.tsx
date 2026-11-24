@@ -1,4 +1,4 @@
-import { BinderPaper } from "@/components/ui/binder-paper";
+import { BinderPaper } from "@/shared/components/binder-paper";
 
 export default function TriviaLayout({
 	children,

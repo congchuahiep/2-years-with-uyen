@@ -2,10 +2,10 @@
 
 import { motion } from "motion/react";
 import Image from "next/image";
-import { Polaroid } from "@/components/ui/polaroid";
-import { RoughBox } from "@/components/ui/rough-box";
+import { Polaroid } from "@/shared/components/polaroid";
+import { RoughBox } from "@/shared/components/rough-box";
 import type { PolaroidImage } from "@/types/polaroid";
-import cn from "@/utils/cn";
+import cn from "@/shared/utils/cn";
 
 export function PolaroidViewer({ images }: { images: PolaroidImage[] }) {
 	return (

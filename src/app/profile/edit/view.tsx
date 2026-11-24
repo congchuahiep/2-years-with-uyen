@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { AvatarUpload } from "@/components/ui/avatar-upload";
-import { Button } from "@/components/ui/button";
-import { ErrorMessageBox } from "@/components/ui/error-message-box";
-import { Input } from "@/components/ui/input";
-import { RoughBox } from "@/components/ui/rough-box";
-import { Spinner } from "@/components/ui/spinner";
+import { AvatarUpload } from "@/shared/components/avatar-upload";
+import { Button } from "@/shared/components/button";
+import { ErrorMessageBox } from "@/shared/components/error-message-box";
+import { Input } from "@/shared/components/input";
+import { RoughBox } from "@/shared/components/rough-box";
+import { Spinner } from "@/shared/components/spinner";
 import {
 	type UpdateProfileVariables,
 	useUpdateProfile,

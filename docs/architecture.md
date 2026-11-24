@@ -40,9 +40,13 @@ src/
 
 `shared/` là nơi đặt thứ mà **từ hai feature trở lên** cùng cần. Một feature không được "mượn" code nội bộ của feature khác bằng deep import.
 
+**`shared/` không có barrel export.** Không tạo `index.ts` trong `shared/components`, `shared/icons`, `shared/utils` hay bất kỳ thư mục con nào của `shared`. Lý do: `shared` là tập hợp các đơn vị độc lập, gom chúng vào một cửa chỉ làm bundle khó tree-shake và dễ tạo vòng lặp import. Nơi dùng trỏ thẳng file: `@/shared/components/rough-box`, `@/shared/utils/cn`.
+
 Mỗi thư mục con trong `features/<tên-feature>/` có `index.ts` riêng, và `features/<tên-feature>/index.ts` re-export lại các barrel đó. Thư mục không dùng thì không tạo — repo không cần `services/` rỗng cho đẹp cây.
 
 ## 3. Quy tắc barrel
+
+Barrel là đặc quyền của `features/`. `shared/` không có barrel, import trực tiếp file cụ thể.
 
 Quy tắc bắt buộc: **code ngoài feature chỉ import từ `@/features/<tên-feature>`**, không đi sâu vào file cụ thể.
 

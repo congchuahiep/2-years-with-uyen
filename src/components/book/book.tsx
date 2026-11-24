@@ -388,13 +388,13 @@ function GhostBookDepth({
  * Thứ tự:
  * - Bìa trước
  * - Mặt sau bìa trước (chỉ khi mở 2 trang, `portrait = false`)
- * - Tiêu đề
+ * - Các trang intro (1 → 5)
  * - Danh sách các cặp trang (trái, phải)...
  * - Kết thúc
  * - Mặt sau bìa sau (chỉ khi mở 2 trang, `portrait = false`)
  * - Bìa sau
  *
- * Số trang vật lý: bìa=-1, gian=0, intro=(1,2,3), cặp moment đầu = (4,5), ...
+ * Số trang vật lý: bìa=-1, gian=0, intro=(1..5), cặp moment đầu = (6,7), ...
  */
 function buildPages(
   pages: BookPairFlipPage[],
@@ -407,18 +407,18 @@ function buildPages(
     layout.portrait ? "right" : side;
 
   for (const [index, pair] of pages.entries()) {
-    // Số trang vật lý: tiêu đề = 1 nên cặp moment thứ i là (4+2i, 5+2i)
+    // Số trang vật lý: intro = 1..5 nên cặp moment thứ i là (6+2i, 7+2i)
     const left = (
       <BookPage
         side={faceSide("left")}
-        pageNumber={index * 2 + 4}
+        pageNumber={index * 2 + 6}
         items={pair.items.filter((item) => item.side === "left")}
       />
     );
     const right = (
       <BookPage
         side={faceSide("right")}
-        pageNumber={index * 2 + 5}
+        pageNumber={index * 2 + 7}
         items={pair.items.filter((item) => item.side === "right")}
       />
     );

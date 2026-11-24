@@ -16,7 +16,7 @@ interface BookPageProps {
   side: "left" | "right";
   /** Các item thuộc đúng mặt này, mỗi item mang vị trí tự do (position, %) */
   items: BookPageItem[];
-  /** Số trang vật lý hiển thị nhỏ ở góc (bìa = 1, cặp đầu = 2,3, ...) */
+  /** Số trang vật lý hiển thị nhỏ ở góc (intro 1..5, cặp moment đầu = 6,7, ...) */
   pageNumber: number;
 }
 

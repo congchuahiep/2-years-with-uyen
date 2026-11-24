@@ -10,9 +10,10 @@ import {
 } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { cn } from "tailwind-variants";
-import { ArrowIcon } from "@/shared/icons/arrow";
+import type { PageFace } from "@/features/book/types";
+import { type BookLayout, buildBookPages, INITIAL_LAYOUT, useBookLayout } from "../utils";
 import { Button } from "@/shared/components/button";
-import type { BookPairFlipPage } from "@/features/book/types";
+import { ArrowIcon } from "@/shared/icons/arrow";
 import { playSound } from "@/shared/utils/audio";
 import { BookCover } from "./book-cover";
 import { BookPage } from "./book-page";
@@ -21,107 +22,6 @@ import {
   BOOK_PAGE_DESIGN_WIDTH,
   BookPageScale,
 } from "./book-page-scale";
-import { EndBookPage } from "./static-element/end-book-page";
-import { FrontBookCover } from "./static-element/front-book-cover";
-import { IntroBookPages } from "./static-element/intro-book-pages";
-
-/**
- * ! THỨ TỰ MẶT TRANG
- * Đúng (mặc định): mỗi cặp trang emit theo thứ tự (mặt TRÁI, mặt PHẢI).
- * Nếu chạy thử thấy các mặt bị NGƯỢC (mặt trái ra bên phải) — hãy đổi thành
- * `false` và chỉ cần swap 2 dòng trong `buildPages` bên dưới.
- */
-const LEFT_PAGE_FIRST = true;
-
-/**
- * Ngưỡng chuyển chế độ hiển thị:
- * - Chiều rộng trình duyệt > 1024px (xấp xỉ giới hạn `max-w-5xl` của layout) → mở 2 trang
- * - Chiều rộng trình duyệt <= 1024px → hiển thị 1 trang (portrait)
- */
-const PORTRAIT_BREAKPOINT = 1024;
-
-/** Trì hoãn đo lại kích thước khi đang kéo resize, tránh việc remount cuốn sổ liên tục */
-const LAYOUT_DEBOUNCE_MS = 150;
-
-/**
- * Kích thước tính được cho cuốn sổ.
- * `width`/`height` là kích thước của MỘT mặt trang sau khi đã co theo container.
- */
-interface BookLayout {
-  /** true = 1 trang, false = mở 2 trang */
-  portrait: boolean;
-  width: number;
-  height: number;
-  /** Tỉ lệ thu/phóng nội dung so với thiết kế 520×650 */
-  scale: number;
-}
-
-const INITIAL_LAYOUT: BookLayout = {
-  portrait: false,
-  width: BOOK_PAGE_DESIGN_WIDTH,
-  height: BOOK_PAGE_DESIGN_HEIGHT,
-  scale: 1,
-};
-
-/**
- * Đo chiều rộng container + viewport để tính kích thước & chế độ hiển thị của sổ.
- *
- * Kích thước luôn được tính sao cho cuốn sổ vừa khít container:
- * - chế độ 2 trang: mỗi trang = min(520, container / 2)
- * - chế độ 1 trang: mỗi trang = min(520, container)
- * và chiều cao giữ nguyên tỉ lệ 520:650 (nội dung bên trong tự scale theo,
- * xem `BookPageScale`). Như vậy sổ không bao giờ tràn container.
- */
-function useBookLayout(
-  containerRef: RefObject<HTMLDivElement | null>,
-): BookLayout {
-  const [layout, setLayout] = useState<BookLayout>(INITIAL_LAYOUT);
-
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    let timer: number | undefined;
-
-    const measure = () => {
-      const viewportWidth = window.innerWidth;
-      const containerWidth = container.clientWidth;
-
-      const portrait = viewportWidth <= PORTRAIT_BREAKPOINT;
-      const width = Math.min(
-        BOOK_PAGE_DESIGN_WIDTH,
-        Math.max(portrait ? containerWidth : containerWidth / 2, 0),
-      );
-      const scale = width / BOOK_PAGE_DESIGN_WIDTH;
-      const height = BOOK_PAGE_DESIGN_HEIGHT * scale;
-
-      setLayout((previous) =>
-        previous.portrait === portrait &&
-        Math.abs(previous.width - width) < 0.5 &&
-        Math.abs(previous.height - height) < 0.5
-          ? previous
-          : { portrait, width, height, scale },
-      );
-    };
-
-    const scheduleMeasure = () => {
-      if (timer) window.clearTimeout(timer);
-      timer = window.setTimeout(measure, LAYOUT_DEBOUNCE_MS);
-    };
-
-    measure();
-
-    const observer = new ResizeObserver(scheduleMeasure);
-    observer.observe(container);
-
-    return () => {
-      observer.disconnect();
-      if (timer) window.clearTimeout(timer);
-    };
-  }, [containerRef]);
-
-  return layout;
-}
 
 type FlipBookControl = {
   flipNext: (corner?: "top" | "bottom") => void;
@@ -133,16 +33,21 @@ type FlipBookControl = {
 };
 
 interface BookProps {
-  pages: BookPairFlipPage[];
+  /** Chuỗi mặt trang phẳng theo thứ tự lật, không phải cặp mặt trang. */
+  faces: PageFace[];
 }
 
-export function Book({ pages }: BookProps) {
+export function Book({ faces }: BookProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const flipBookRef = useRef<{ pageFlip: () => FlipBookControl | undefined }>(
     null,
   );
   const [currentPage, setCurrentPage] = useState(0);
+  const currentPageRef = useRef(0);
   const previousPortrait = useRef(INITIAL_LAYOUT.portrait);
+
+  const [showFrontGhostCover, setShowFrontGhostCover] = useState(false);
+  const [showBackGhostCover, setShowBackGhostCover] = useState(true);
 
   const layout = useBookLayout(containerRef);
 
@@ -155,6 +60,11 @@ export function Book({ pages }: BookProps) {
       setCurrentPage(0);
     }
   }, [layout.portrait]);
+
+  const pageChildren = useMemo(
+    () => buildBookPages(faces, layout),
+    [faces, layout],
+  );
 
   /**
    * Workaround bug page-flip 2.0.x: khi bật `disableFlipByClick`, thư viện chặn mọi cú lật
@@ -183,13 +93,15 @@ export function Book({ pages }: BookProps) {
     }
   };
 
-  const handleNext = () => flipByButton("next");
-  const handlePrev = () => flipByButton("prev");
+  const handleNext = () => {
+    if (currentPage === pageChildren.length - 1) setShowBackGhostCover(false);
+    flipByButton("next");
+  };
 
-  const pageChildren = useMemo(
-    () => buildPages(pages, layout),
-    [pages, layout],
-  );
+  const handlePrev = () => {
+    if (currentPage === 1) setShowFrontGhostCover(false);
+    flipByButton("prev");
+  };
 
   const handleBookState = ({
     data: event,
@@ -229,6 +141,12 @@ export function Book({ pages }: BookProps) {
       }
       case "read":
         document.body.style.cursor = "initial";
+        // Bìa đã mở xong: bật ghost. Lúc này tờ bìa lót đã phủ lên nó nên
+        // không nhìn thấy; ghost chỉ lộ ra khi bìa lót bị lật tiếp.
+        setShowFrontGhostCover(currentPageRef.current >= 1);
+        setShowBackGhostCover(
+          currentPageRef.current <= pageChildren.length - 2,
+        );
         return;
     }
   };
@@ -237,7 +155,25 @@ export function Book({ pages }: BookProps) {
     <div ref={containerRef} className="flex w-full flex-col items-center gap-6">
       <div
         className="w-full drop-shadow-2xl z-50 relative"
-        style={layout.portrait ? { width: layout.width } : undefined}
+        style={{ width: layout.portrait ? layout.width : layout.width * 2 }}
+        onPointerDownCapture={(event) => {
+          // Tắt/bật ghost ngay từ cú chạm, trước khi page-flip kịp chạy
+          // animation — onFlip chỉ bắn sau khi lật xong nên chậm một nhịp.
+          if (layout.portrait) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          const leftHalf = event.clientX < rect.left + rect.width / 2;
+
+          // Ở spread đầu: chạm nửa trái = bắt đầu đóng bìa trước.
+          if (currentPage === 1 && leftHalf) {
+            setShowFrontGhostCover(false);
+            return;
+          }
+
+          // Ở spread cuối: chạm nửa phải = bắt đầu mở bìa sau.
+          if (currentPage === pageChildren.length - 3 && !leftHalf) {
+            setShowBackGhostCover(false);
+          }
+        }}
       >
         <HTMLFlipBook
           key={`${layout.portrait ? "portrait" : "landscape"}-${Math.round(layout.width)}-${Math.round(layout.height)}`}
@@ -266,7 +202,14 @@ export function Book({ pages }: BookProps) {
           className="mx-auto"
           style={{ transition: "all 0s ease" }}
           onFlip={(event) => {
-            setCurrentPage(event.data as number);
+            const page = event.data as number;
+            currentPageRef.current = page;
+            setCurrentPage(page);
+            // onFlip bắn ở ĐẦU cú lật nên có thể phản ứng ngay:
+            // - bắt đầu đóng bìa (0) → tắt ghost trước khi bìa kịp mở ra
+            // - bắt đầu che bìa lót (>= 3) → bật ghost trước khi nó biến mất
+            if (page === 0) setShowFrontGhostCover(false);
+            if (page >= 3) setShowFrontGhostCover(true);
           }}
           onChangeState={handleBookState}
         >
@@ -277,6 +220,8 @@ export function Book({ pages }: BookProps) {
           layout={layout}
           currentPage={currentPage}
           totalPages={pageChildren.length}
+          frontVisible={showFrontGhostCover}
+          backVisible={showBackGhostCover}
         />
       </div>
 
@@ -302,7 +247,6 @@ export function Book({ pages }: BookProps) {
         >
           <ArrowIcon variant="thick" className="scale-150" />
         </Button>
-
       </div>
 
       <p className="text-xs font-semibold text-purple-200/70 select-none">
@@ -316,10 +260,14 @@ function GhostBookDepth({
   layout,
   currentPage,
   totalPages,
+  frontVisible,
+  backVisible,
 }: {
   layout: BookLayout;
   currentPage: number;
   totalPages: number;
+  frontVisible: boolean;
+  backVisible: boolean;
 }) {
   return (
     <div
@@ -333,110 +281,21 @@ function GhostBookDepth({
           <BookCover
             key="ghost-cover-front"
             side="left"
-            className={cn(
-              "transition-opacity duration-500",
-              currentPage >= 3 ? "opacity-100" : "opacity-0",
-            )}
+            className={cn(frontVisible ? "opacity-100" : "opacity-0")}
           />
           <BookCover
             key="ghost-cover-back"
             side="right"
-            className={cn(
-              "transition-opacity duration-500",
-              currentPage <= totalPages - 5 ? "opacity-100" : "opacity-0",
-            )}
+            className={cn(backVisible ? "opacity-100" : "opacity-0")}
           />
         </>
       ) : (
         <BookCover
           key="ghost-cover"
-          className={cn(
-            "transition-opacity duration-500",
-            currentPage >= 1 ? "opacity-100" : "opacity-0",
-          )}
+          className={cn(currentPage >= 1 ? "opacity-100" : "opacity-0")}
         />
       )}
     </div>
   );
-} /**
- * Dựng danh sách child cho HTMLFlipBook từ dữ liệu PairFlipPage.
- * Thứ tự:
- * - Bìa trước
- * - Mặt sau bìa trước (chỉ khi mở 2 trang, `portrait = false`)
- * - Các trang intro (1 → 5)
- * - Danh sách các cặp trang (trái, phải)...
- * - Kết thúc
- * - Mặt sau bìa sau (chỉ khi mở 2 trang, `portrait = false`)
- * - Bìa sau
- *
- * Số trang vật lý: bìa=-1, gian=0, intro=(1..5), cặp moment đầu = (6,7), ...
- */
-function buildPages(
-  pages: BookPairFlipPage[],
-  layout: BookLayout,
-): ReactNode[] {
-  const faces: ReactNode[] = [];
-
-  // Chế độ 1 trang (portrait): mọi mặt đều được vẽ như một trang phải
-  const faceSide = (side: "left" | "right"): "left" | "right" =>
-    layout.portrait ? "right" : side;
-
-  for (const [index, pair] of pages.entries()) {
-    // Số trang vật lý: intro = 1..5 nên cặp moment thứ i là (6+2i, 7+2i)
-    const left = (
-      <BookPage
-        side={faceSide("left")}
-        pageNumber={index * 2 + 6}
-        items={pair.items.filter((item) => item.side === "left")}
-      />
-    );
-    const right = (
-      <BookPage
-        side={faceSide("right")}
-        pageNumber={index * 2 + 7}
-        items={pair.items.filter((item) => item.side === "right")}
-      />
-    );
-
-    faces.push(
-      <BookPageScale key={`${pair.id}-left`}>
-        {LEFT_PAGE_FIRST ? left : right}
-      </BookPageScale>,
-    );
-    faces.push(
-      <BookPageScale key={`${pair.id}-right`}>
-        {LEFT_PAGE_FIRST ? right : left}
-      </BookPageScale>,
-    );
-  }
-
-  const showCoverBacks = !layout.portrait;
-
-  return [
-    <BookPageScale key="front-cover">
-      <FrontBookCover />
-    </BookPageScale>,
-    ...(showCoverBacks
-      ? [
-          <BookPageScale key="flyleaf">
-            <BookCover side="left" />
-          </BookPageScale>,
-        ]
-      : []),
-    ...IntroBookPages(layout.portrait ? "right" : undefined),
-    ...faces,
-    <BookPageScale key="end-message">
-      <EndBookPage side={layout.portrait ? "right" : undefined} />
-    </BookPageScale>,
-    ...(showCoverBacks
-      ? [
-          <BookPageScale key="end-blank">
-            <BookCover side="right" />
-          </BookPageScale>,
-        ]
-      : []),
-    <BookPageScale key="back-cover">
-      <BookCover />
-    </BookPageScale>,
-  ];
 }
+

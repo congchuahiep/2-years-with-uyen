@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
 	return (
 		<main className="relative flex h-screen flex-col items-center justify-center gap-4 overflow-hidden px-4 py-6">
-			<Book pages={[]} />
+			<Book faces={[]} />
 			<form action={logout} className="absolute right-4 bottom-4">
 				<button
 					type="submit"

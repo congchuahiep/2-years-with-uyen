@@ -1,11 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { forwardRef } from "react";
-import type { BookPageItem } from "@/features/book/types";
-import { resolvePageItemPosition } from "@/features/book/types";
-import { Polaroid } from "@/shared/components/polaroid";
-import { RoughBox } from "@/shared/components/rough-box";
+import type { PageFaceItem } from "@/features/book/types";
+import { resolvePageFaceItemPosition } from "@/features/book/utils";
 import { BlankBookPage } from "./blank-book-page";
 import { BookNumber } from "./static-element/book-number";
 
@@ -13,7 +10,7 @@ interface BookPageProps {
   /** Mặt của trang: trái hay phải (để vẽ bóng gáy + căn số trang) */
   side: "left" | "right";
   /** Các item thuộc đúng mặt này, mỗi item mang vị trí tự do (position, %) */
-  items: BookPageItem[];
+  items: PageFaceItem[];
   /** Số trang vật lý hiển thị nhỏ ở góc (intro 1..5, cặp moment đầu = 6,7, ...) */
   pageNumber: number;
 }
@@ -40,8 +37,8 @@ export const BookPage = forwardRef<HTMLDivElement, BookPageProps>(
 BookPage.displayName = "BookPage";
 
 /** Bọc item theo vị trí/rotation/scale/z từ position (freeform) */
-function FreeformItem({ item }: { item: BookPageItem }) {
-  const position = resolvePageItemPosition(item.position);
+function FreeformItem({ item }: { item: PageFaceItem }) {
+  const position = resolvePageFaceItemPosition(item.position);
 
   return (
     <div
@@ -59,51 +56,10 @@ function FreeformItem({ item }: { item: BookPageItem }) {
 }
 
 /**
- * Nội dung thật của item.
- * - moment: Polaroid (size sm) + tiêu đề, xoay nhẹ theo hash, bọc Link → detail.
- * - sticky_note: giấy note màu theo `color`.
- * - sticker: chưa có catalog renderer — tạm ẩn (sẽ làm ở Buổi B cùng editor).
+ * Nội dung thật của item trên mặt trang giấy.
+ * Mới chỉ có hệ thống vị trí; renderer cho từng loại item sẽ làm cùng
+ * editor mới (photo, sticky note, sticker).
  */
-function ItemContent({ item }: { item: BookPageItem }) {
-  if (item.item_type === "sticker") return null;
-
-  // Sticky note
-  if (item.item_type === "sticky_note" && item.stickyNote) {
-    return (
-      <div
-        className="-rotate-1 flex items-center justify-center overflow-hidden rounded-sm p-2 shadow-md select-none"
-        style={{ backgroundColor: item.stickyNote.color }}
-      >
-        <p className="line-clamp-4 text-center text-xs leading-tight font-bold text-amber-950">
-          {item.stickyNote.content}
-        </p>
-      </div>
-    );
-  }
-
-  // Moment
-  const moment = item.moment;
-  if (!moment) return null;
-
-  const coverImage =
-    moment.images?.find((image) => image.isMain) ?? moment.images?.[0];
-
-  return (
-    <Polaroid
-      text={moment.title}
-      className="rotate-(--moment-rotate) duration-150"
-      size="sm"
-    >
-      {coverImage && (
-        <RoughBox className="size-full">
-          <Image
-            src={coverImage.url}
-            alt={moment.title}
-            className="object-cover -z-50 pointer-events-none"
-            fill
-          />
-        </RoughBox>
-      )}
-    </Polaroid>
-  );
+function ItemContent({ item }: { item: PageFaceItem }) {
+  return null;
 }

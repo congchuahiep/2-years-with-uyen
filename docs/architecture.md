@@ -22,7 +22,7 @@ src/
 │       ├── components/
 │       ├── hooks/
 │       ├── services/     # logic thuần, không phụ thuộc React
-│       ├── types/
+│       ├── types.ts       # types của feature; thành thư mục khi feature phức tạp
 │       ├── utils/
 │       ├── actions.ts    # Server Actions — client được phép import
 │       ├── server.ts     # chỉ server dùng — client TUYỆT ĐỐI không import
@@ -44,6 +44,8 @@ src/
 **`shared/` không có barrel export.** Không tạo `index.ts` trong `shared/components`, `shared/icons`, `shared/utils` hay bất kỳ thư mục con nào của `shared`. Lý do: `shared` là tập hợp các đơn vị độc lập, gom chúng vào một cửa chỉ làm bundle khó tree-shake và dễ tạo vòng lặp import. Nơi dùng trỏ thẳng file: `@/shared/components/rough-box`, `@/shared/utils/cn`.
 
 Mỗi thư mục con trong `features/<tên-feature>/` có `index.ts` riêng, và `features/<tên-feature>/index.ts` re-export lại các barrel đó. Thư mục không dùng thì không tạo — repo không cần `services/` rỗng cho đẹp cây.
+
+Types của feature mặc định là **một file** `types.ts`. Chỉ tách thành thư mục `types/` khi feature đảm nhận nhiều chức năng lớn và cần phân nhóm — cùng tinh thần với `utils.ts`. Mỗi feature nên có `README.md` riêng, đặt ngay trong thư mục feature, để đọc và tìm hiểu API của feature đó trước khi dùng. Khái niệm nền của feature ghi ở đó, không ở `docs/`.
 
 ## 3. Quy tắc barrel
 

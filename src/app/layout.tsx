@@ -13,10 +13,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  modal,
 }: {
   children: React.ReactNode;
-  modal: React.ReactNode;
 }) {
   return (
     <html
@@ -31,7 +29,6 @@ export default function RootLayout({
                 <MuteButton className="fixed bottom-4 left-4 z-50" />
                 {children}
               </ModalContentWrapper>
-              {modal}
             </ModalProvider>
           </AudioPreloaderProvider>
         </QueryProvider>

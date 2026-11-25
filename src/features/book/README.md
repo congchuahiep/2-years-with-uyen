@@ -60,17 +60,29 @@ Tờ bìa lót (flyleaf) bị page-flip ẩn trong lúc lật, nên app vẽ `Gh
 
 ## 7. API công khai của feature
 
-Import từ `@/features/book` hoặc file cụ thể trong feature:
+Import từ `@/features/book`, hoặc file cụ thể khi đang ở trong feature. Component dùng default export, type và util dùng named export.
 
 | Thành phần | File | Dùng để |
 |---|---|---|
-| `Book` | `components/book.tsx` | Component chính, nhận `faces: PageFace[]` |
+| `Book` | `components/Book.tsx` | Component chính, nhận `faces: PageFace[]` |
 | `BookPage`, `BlankBookPage`, `BookPageScale` | `components/` | Render từng mặt trang |
-| `BookCover` | `components/book-cover.tsx` | Mặt bìa (đứng yên khi sổ đóng) |
+| `BookCover` | `components/BookCover.tsx` | Mặt bìa (đứng yên khi sổ đóng) |
 | `FrontBookCover`, `IntroBookPages`, `EndBookPage`, `BookNumber` | `components/static-element/` | Trang tĩnh: bìa ngoài, intro, kết |
-| `buildBookPages` | `utils/build-book-pages.tsx` | Dựng child cho HTMLFlipBook từ `PageFace[]` |
-| `useBookLayout`, `BookLayout`, `INITIAL_LAYOUT`, `PORTRAIT_BREAKPOINT`, `LEFT_PAGE_FIRST` | `utils/book-layout.ts` + `build-book-pages.tsx` | Đo, tính kích thước/mode và thứ tự mặt |
-| `PageFace`, `PageFaceItem`, `PageFaceItemPosition`, `PageCoverVariant` | `types.ts` | Mô hình dữ liệu |
+| `IntroBookPage1`..`IntroBookPage5` | `components/static-element/` | Từng trang intro, mỗi file một trang |
+| `buildBookPages`, `LEFT_PAGE_FIRST` | `utils/build-book-pages.tsx` | Dựng child cho HTMLFlipBook từ `PageFace[]` |
+| `buildStaticBookPages` | `utils/build-static-book-pages.tsx` | Dựng chuỗi trang tĩnh khi `faces` rỗng |
+| `useBookLayout` | `hooks/useBookLayout.ts` | Đo container, tính kích thước và mode |
+| `BookLayout` | `types/book-layout.ts` | Kiểu của kết quả đo |
+| `INITIAL_LAYOUT`, `PORTRAIT_BREAKPOINT`, `LAYOUT_DEBOUNCE_MS` | `utils/book-layout.ts` | Hằng số layout |
+| `BOOK_PAGE_DESIGN_WIDTH`, `BOOK_PAGE_DESIGN_HEIGHT` | `utils/book-page-scale.ts` | Kích thước thiết kế 520x650 |
+| `PageFace`, `PageFaceSide`, `PageCoverVariant` | `types/page-face.ts` | Mô hình mặt trang |
+| `PageFaceItem`, `PageFaceItemType`, `PageFaceItemPosition` | `types/page-face-item.ts` | Item và vị trí item |
+| `BookData` | `types/book-data.ts` | Dữ liệu đầu vào của sổ |
 | `resolvePageFaceItemPosition`, `DEFAULT_PAGE_FACE_ITEM_POSITION` | `utils/page-face-item.ts` | Ghép position thiếu trường với default |
 
-Types của feature nằm trong một file `types.ts` theo convention chung của repo.
+Theo convention chung: component và hook là một default export với tên file trùng tên export; type và util là kebab-case với named export. Feature này chưa có `server.ts` hay `actions.ts` vì sổ còn read-only.
+
+### Sổ có hai chế độ dựng trang
+
+- `faces` rỗng: `Book` dùng `buildStaticBookPages`, tức bìa trước, tờ lót (chỉ landscape), 5 trang intro, trang kết, tờ lót sau (chỉ landscape), bìa sau. Đây là trạng thái hiện tại của route `/`.
+- `faces` có dữ liệu: `Book` dùng `buildBookPages` và **không** ghép thêm trang tĩnh. Khi nối dữ liệu thật, nơi dùng phải tự dựng đủ chuỗi mặt trang, kể cả 4 mặt bìa.

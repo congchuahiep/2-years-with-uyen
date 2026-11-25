@@ -1,4 +1,4 @@
-Dự án có sử dụng Rough.js để tạo các components có style trông như đang vẽ bằng bút chì, hand-made. Bạn có thể tham khảo một số component như `src/shared/components/rough-box.tsx`,`src/shared/components/button.tsx` hoặc các component trong thư mục `src/shared/icons/` để tham khảo cách triển khai, ở đó có một số lưu ý sau:
+Dự án có sử dụng Rough.js để tạo các components có style trông như đang vẽ bằng bút chì, hand-made. Bạn có thể tham khảo một số component như `src/shared/components/RoughBox.tsx`, `src/shared/components/Button.tsx` hoặc các component trong thư mục `src/shared/icons/` để tham khảo cách triển khai, ở đó có một số lưu ý sau:
 
 > 💡 **Khi cần tạo một component Rough.js mới**, hãy dùng skill `rough-component` tại `.agents/skills/rough-component/SKILL.md` — skill chứa đầy đủ pattern bắt buộc (9 pattern), contract của `roughConfig`, template container/icon và checklist hoàn thiện.
 

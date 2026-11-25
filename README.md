@@ -46,6 +46,10 @@ Mặc định `DATABASE_URL` trỏ tới `file:./data/app.db` và tạo file tro
 | `bun run dev` | Next dev dưới Bun |
 | `bun run build` | Next build dưới Node |
 | `bun run lint` | ESLint |
+| `bun run fmt` | Biome format, chạy sau mỗi lần sửa code |
+| `bun run check` | `tsc --noEmit` |
+| `bun run cycles` | Tìm vòng import runtime |
+| `bun run conventions` | Luật barrel, default export, server-only |
 | `bun run db:generate` | Sinh migration từ schema |
 | `bun run db:migrate` | Áp migration |
 | `bun run db:seed` | Tạo/cập nhật một tài khoản |
@@ -58,4 +62,4 @@ Mặc định `DATABASE_URL` trỏ tới `file:./data/app.db` và tạo file tro
 
 ## Tài liệu
 
-[architecture.md](docs/architecture.md) (quy ước bắt buộc) · [techstack.md](docs/techstack.md) · [structure.md](docs/structure.md) · [features.md](docs/features.md) · [plan.md](docs/plan.md). `docs/new-plan.md` là kế hoạch lịch sử của thời FlipBook + Supabase, không còn hiệu lực.
+[architecture.md](docs/architecture.md) (quy ước bắt buộc) · [import-boundaries.md](docs/import-boundaries.md) · [naming.md](docs/naming.md) · [resources.md](docs/resources.md) · [page-pattern.md](docs/page-pattern.md) · [features.md](docs/features.md) · [techstack.md](docs/techstack.md) · [plan.md](docs/plan.md). Mỗi feature có `README.md` riêng. `docs/new-plan.md` là kế hoạch lịch sử của thời FlipBook + Supabase, không còn hiệu lực.

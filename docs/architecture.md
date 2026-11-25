@@ -1,178 +1,179 @@
-# Kiến trúc & Convention
+# Kiến trúc
 
-Tài liệu này là nguồn sự thật về cách tổ chức code của dự án sau khi chuyển sang kiến trúc feature. Khi thói quen cũ trong repo mâu thuẫn với tài liệu này, tài liệu này thắng.
+Tài liệu này là nguồn sự thật về cách tổ chức code. Khi thói quen cũ trong repo mâu thuẫn với tài liệu này, tài liệu này thắng. Các tài liệu chuyên đề đi kèm:
+
+- [import-boundaries.md](import-boundaries.md): bảng nơi import và vì sao barrel tạo vòng import.
+- [naming.md](naming.md): bảng đặt tên file, export, thư mục.
+- [resources.md](resources.md): mô hình resource valibot, FormData, `useActionState`.
+- [page-pattern.md](page-pattern.md): page mỏng, `_components` / `_hooks` / `_lib`.
+- README của từng feature: API và khái niệm riêng của feature.
 
 ## 1. Bối cảnh
 
-Ứng dụng chỉ có hai người dùng, nên mọi quyết định kiến trúc ưu tiên **ít tầng, dễ đọc, ranh giới rõ** hơn là mở rộng quy mô. Backend dùng chính Next.js (Server Components để đọc, Server Actions để ghi) và SQLite qua `@libsql/client` (file khi dev/self-host, Turso khi chạy trên Vercel). Không còn Supabase, không còn TanStack Query — hai thứ này từng tồn tại nhưng đã bị loại bỏ có chủ đích, xem mục 9.
+Ứng dụng chỉ có hai người dùng, nên mọi quyết định ưu tiên **ít tầng, dễ đọc, ranh giới rõ** hơn là mở rộng quy mô. Backend dùng chính Next.js: Server Component đọc, Server Action ghi. Dữ liệu là SQLite (file khi dev, Turso khi deploy) qua Drizzle.
+
+Bộ luật này học từ một client Next.js khác ở ba điểm: **barrel một chiều**, **resource schema là nguồn sự thật của type**, **page mỏng chia `_components` / `_hooks` / `_lib`**. Không mang theo HTTP client, TanStack Query, Zustand hay React Hook Form.
 
 ## 2. Cây thư mục
 
 ```text
 src/
-├── app/                  # chỉ routing shell, file mỏng
-│   ├── page.tsx          # cuốn sổ
+├── app/                          # chỉ routing shell
+│   ├── layout.tsx
+│   ├── page.tsx                  # cuốn sổ
+│   ├── error.tsx
 │   ├── login/page.tsx
 │   ├── maintenance/page.tsx
-│   └── api/music/...     # vỏ mỏng gọi features/music/server.ts
-├── configs/              # hằng số dùng chung: font, route, env
-├── db/                   # client + schema Drizzle (server-only)
+│   └── api/music/
+│       ├── search/route.ts       # vỏ mỏng gọi features/music/server.ts
+│       └── [...path]/route.ts
+├── configs/                      # hằng số hạ tầng: env, font, route
+├── db/
+│   ├── client.ts                 # kết nối lazy, server-only
+│   └── schema.ts                 # bảng Drizzle
 ├── features/
-│   └── <tên-feature>/
-│       ├── components/
-│       ├── hooks/
-│       ├── services/     # logic thuần, không phụ thuộc React
-│       ├── types.ts       # types của feature; thành thư mục khi feature phức tạp
-│       ├── utils/
-│       ├── actions.ts    # Server Actions — client được phép import
-│       ├── server.ts     # chỉ server dùng — client TUYỆT ĐỐI không import
-│       └── index.ts      # barrel công khai của feature
-├── shared/               # dùng chung toàn dự án, KHÔNG có barrel
-│   ├── components/       # doodle kit: rough-box, button, polaroid…
-│   ├── icons/            # toàn bộ icon, kể cả chưa dùng
-│   ├── providers/        # provider toàn cục
-│   ├── hooks/
-│   ├── types/
-│   └── utils/            # cn, color, hash, audio
-└── styles/
+│   └── <feature>/
+│       ├── README.md             # API + khái niệm của feature
+│       ├── index.ts              # barrel công khai (client-safe)
+│       ├── actions.ts            # Server Action, client import được
+│       ├── server.ts             # server-only, client không được chạm
+│       ├── components/           # PascalCase.tsx + index.ts
+│       ├── hooks/                # useXxx.ts + index.ts
+│       ├── resources/            # <kebab>.ts + index.ts
+│       ├── forms/                # <kebab>.ts + index.ts (nếu có)
+│       ├── types/                # <kebab>.ts + index.ts
+│       └── utils/                # <kebab>.ts + index.ts
+├── shared/                       # dùng chung, KHÔNG barrel
+│   ├── components/               # doodle kit, PascalCase.tsx
+│   ├── hooks/                    # useXxx.ts
+│   ├── icons/                    # PascalCase.tsx, đủ bộ icon
+│   ├── providers/                # provider + context toàn cục
+│   ├── types/                    # <kebab>.ts
+│   └── utils/                    # <kebab>.ts
+├── styles/globals.css
+└── proxy.ts                      # middleware của Next
 ```
 
-`app/` chỉ chứa route, layout và metadata. Không viết logic nghiệp vụ trong `app/`; file route chỉ import từ barrel của feature hoặc từ `shared/`.
+Ngoài `src/`:
 
-`shared/` là nơi đặt thứ mà **từ hai feature trở lên** cùng cần. Một feature không được "mượn" code nội bộ của feature khác bằng deep import.
+- `drizzle/`: migration SQL sinh bởi drizzle-kit, commit vào repo.
+- `data/`: file SQLite local, **không commit**.
+- `scripts/`: seed tài khoản và ba script kiểm tra kiến trúc.
+- `docs/`: tài liệu dự án.
+- `.agents/skills/`: skill của agent, ví dụ `rough-component`.
 
-**`shared/` không có barrel export.** Không tạo `index.ts` trong `shared/components`, `shared/icons`, `shared/utils` hay bất kỳ thư mục con nào của `shared`. Lý do: `shared` là tập hợp các đơn vị độc lập, gom chúng vào một cửa chỉ làm bundle khó tree-shake và dễ tạo vòng lặp import. Nơi dùng trỏ thẳng file: `@/shared/components/rough-box`, `@/shared/utils/cn`.
-
-Mỗi thư mục con trong `features/<tên-feature>/` có `index.ts` riêng, và `features/<tên-feature>/index.ts` re-export lại các barrel đó. Thư mục không dùng thì không tạo — repo không cần `services/` rỗng cho đẹp cây.
-
-Types của feature mặc định là **một file** `types.ts`. Chỉ tách thành thư mục `types/` khi feature đảm nhận nhiều chức năng lớn và cần phân nhóm — cùng tinh thần với `utils.ts`. Mỗi feature nên có `README.md` riêng, đặt ngay trong thư mục feature, để đọc và tìm hiểu API của feature đó trước khi dùng. Khái niệm nền của feature ghi ở đó, không ở `docs/`.
-
-## 3. Quy tắc barrel
-
-Barrel là đặc quyền của `features/`. `shared/` không có barrel, import trực tiếp file cụ thể.
-
-Quy tắc bắt buộc: **code ngoài feature chỉ import từ `@/features/<tên-feature>`**, không đi sâu vào file cụ thể.
-
-```ts
-// Đúng
-import { Book, type BookData } from "@/features/book";
-
-// Sai — kể cả khi IDE tự gợi ý
-import { Book } from "@/features/book/components/book";
-```
-
-### 3.1 `index.ts` chỉ được chứa code client-safe
-
-`index.ts` là thứ client component được phép import, nên nó **không bao giờ** re-export từ `server.ts`. Một dòng `export * from "./server"` trong `index.ts` là đủ để kéo truy vấn DB và connection string vào bundle trình duyệt.
-
-### 3.2 `server.ts` re-export thẳng file server, không qua barrel con
-
-Khi một file chỉ server dùng nằm trong thư mục con, nó **không** được đưa vào `index.ts` của thư mục đó. `server.ts` sẽ re-export thẳng file nguồn:
+## 3. Các tầng và chiều phụ thuộc
 
 ```text
-features/book/
-├── utils/
-│   ├── index.ts                # KHÔNG export server-item-only
-│   └── server-item-only.ts     # có "server-only" ở đầu
-├── server.ts                   # export * from "./utils/server-item-only"
-└── index.ts                    # export * from "./utils"  (không chạm server)
+app  ->  features  ->  shared
+           |
+           +------->  db, configs
 ```
 
-Nhờ vậy `index.ts` không có đường nào tới file server, còn server code vẫn được gom về một cửa.
+- `app` được import barrel `@/features/<feature>`, hoặc `@/features/<feature>/server` khi page cần đọc dữ liệu. `app` không chứa logic nghiệp vụ.
+- `features` import file cụ thể, kể cả khi dùng code của feature khác. Không import barrel, kể cả barrel của chính mình.
+- `shared` không biết `features` và không biết `db`. Nó chỉ chứa component, hook, type, util thuần.
+- `features` được import `db` và `configs`. `app` cũng được import `configs`.
+- `db` chỉ chứa kết nối và schema; query thuộc feature nào nằm ở `server.ts` của feature đó.
 
-Rủi ro còn lại là người sau thêm `export * from "./utils/server-item-only"` vào `utils/index.ts`. Để lỗi đó thành lỗi build thay vì lỗi bảo mật im lặng, **mọi file server-only phải bắt đầu bằng**:
+Quy tắc này được máy kiểm bằng `bun run conventions` và `bun run cycles`.
+
+## 4. Barrel và public API
+
+Barrel là đặc quyền của `features/`. Mỗi thư mục con của feature có `index.ts`, feature có `index.ts` riêng, và `index.ts` chỉ chứa thứ client import được.
 
 ```ts
-import "server-only";
+// app/page.tsx: đúng, app dùng barrel
+import { Book } from "@/features/book";
+
+// features/book/components/Book.tsx: đúng, trong feature dùng file cụ thể
+import { INITIAL_LAYOUT } from "../utils/book-layout";
+
+// features/book/components/Book.tsx: sai, barrel của chính feature
+import { INITIAL_LAYOUT } from "@/features/book";
 ```
 
-Package `server-only` biến việc import từ client thành lỗi biên dịch.
+`import type` qua barrel vẫn bị xem là import barrel trong feature, vì lý do duy nhất cần barrel là gom runtime. Type dùng chung đặt ở `types/` và trỏ file cụ thể.
 
-### 3.3 `actions.ts` khác `server.ts`
+Chi tiết và bảng đầy đủ: [import-boundaries.md](import-boundaries.md).
 
-Server Action là hàm chạy trên server nhưng **client được phép import** — đó là điểm khác biệt căn bản với `server.ts`. Vì vậy Server Action nằm ở `actions.ts`, có thể được re-export từ `index.ts`:
+## 5. Server và client
 
-```ts
-// features/book/actions.ts
-"use server";
+- Mặc định là Server Component. Chỉ thêm `"use client"` ở lá thực sự cần tương tác: drag, animation, form state.
+- `server.ts` là file server-only: mở đầu bằng `import "server-only"`, không re-export từ `index.ts`. Dùng cho truy vấn DB, đọc secret, gọi API ngoài.
+- `actions.ts` mở đầu bằng `"use server"`, được re-export từ `index.ts`. Mọi action phải tự xác thực session, parse input, ghi DB, `revalidatePath` khi dữ liệu hiển thị ở route khác.
+- Route handler chỉ dùng khi cần endpoint HTTP thật: proxy API ngoài, webhook, serve file. Repo hiện chỉ có `/api/music/*` để tránh CORS và để axios không lọt vào bundle.
+- Client không biết DB tồn tại. Không fetch DB từ client, không dựng API nội bộ cho việc mà Server Action làm được.
 
-export async function movePageItem(input: MovePageItemInput) {
-  // xác thực session, validate bằng zod, ghi DB, revalidate
-}
-```
+## 6. Dữ liệu và validate
 
-`server.ts` dành cho thứ client không bao giờ được chạm: truy vấn DB, đọc secret, ghi file. Nếu một hàm vừa cần client gọi vừa cần đọc secret, nó là Server Action và phải tự xác thực session ở đầu.
+- `db/schema.ts` là nguồn sự thật của tầng DB. Đổi bảng thì sửa file này rồi sinh migration.
+- `features/<f>/resources/<kebab>.ts` là nguồn sự thật của type tầng app. Schema valibot đọc dữ liệu ở `server.ts`, và cũng là schema form khi form gửi đúng shape đó.
+- Không DTO, không mapper. Tên field của resource trùng tên field trả về từ nguồn (camelCase với DB, snake_case với API ngoài như Deezer).
+- Validate ở biên: `server.ts` khi đọc DB hoặc nhận response ngoài, `actions.ts` khi nhận `FormData`.
+- `db/client.ts` và `features/auth/session.ts` là server-only. `configs/env.ts` parse env bằng valibot, gọi lazy để `next build` không đòi secret.
 
-## 4. Ranh giới server / client
-
-- Mặc định là Server Component. Chỉ thêm `"use client"` ở lá thực sự cần tương tác (drag, animation, form state).
-- Không fetch DB từ client. Client không biết DB tồn tại.
-- Server Component đọc dữ liệu bằng cách gọi hàm trong `server.ts`, không gọi qua HTTP nội bộ.
-- Mutation là Server Action. Không dựng route handler chỉ để làm việc mà Server Action làm được.
-- Route handler chỉ dùng khi cần một endpoint HTTP thật: webhook, serve file, upload trực tiếp, hoặc API cho bên ngoài.
-- Mọi Server Action phải: xác thực session → validate input bằng zod → ghi DB → `revalidatePath`/`revalidateTag` nếu dữ liệu hiển thị ở route khác.
-
-## 5. Tầng dữ liệu
-
-- `db/client.ts` tạo kết nối lazy, bắt đầu bằng `import "server-only"`.
-- `db/schema.ts` khai báo schema Drizzle.
-- `drizzle/` chứa migration SQL, sinh bằng `drizzle-kit` và commit vào repo.
-- Query thuộc feature nào thì nằm ở `server.ts` của feature đó, không nằm trong `src/db`.
-- Khi đọc DB trong Server Component trên Next 16, gọi `connection()` trước truy vấn nếu driver là loại đồng bộ — Next có thể coi dữ liệu đó là tĩnh và prerender lúc build.
-
-### 5.1 Biến môi trường
-
-Ba biến bắt buộc khi chạy app: `DATABASE_URL` (file SQLite khi dev, `libsql://...` khi dùng Turso), `DATABASE_AUTH_TOKEN` (chỉ Turso mới cần) và `SESSION_SECRET` (tối thiểu 32 ký tự). `.env` không commit; `.env.example` là mẫu. `configs/env.ts` đọc biến **lazy** — không kiểm tra lúc import — để `next build` không đòi secret.
-
-### 5.2 Auth
-
-- Bảng `users` nằm trong `db/schema.ts`; mật khẩu hash bằng scrypt của Node trong `features/auth/password.ts`.
-- Session là JWT HS256 ký bằng `SESSION_SECRET`, lưu trong cookie `httpOnly` (`features/auth/session-token.ts` và `session.ts`).
-- `proxy.ts` chỉ verify chữ ký, không truy vấn DB, nên mỗi request không tốn round-trip tới Turso.
-- `login`/`logout` là Server Action trong `features/auth/actions.ts`.
-- Tạo tài khoản bằng script, không hard-code mật khẩu: `SEED_EMAIL=... SEED_PASSWORD=... bun run db:seed`.
-
-## 6. Styling
-
-- `cn` lấy từ `tailwind-variants`, không tự viết lại bằng `clsx` + `tailwind-merge`. Một nguồn duy nhất: `shared/utils/cn.ts`.
-- Component có biến thể (size, color, state) dùng `tv()` thay vì chuỗi điều kiện.
-- Icon là asset lâu dài: nằm ở `shared/icons/`, **không xoá icon chỉ vì hiện chưa ai import**. Khi cần dùng lại, import từ `@/shared/icons`.
+Chi tiết: [resources.md](resources.md).
 
 ## 7. Đặt tên
 
-| Loại | Quy ước | Ví dụ |
+Tóm tắt, bảng đầy đủ ở [naming.md](naming.md):
+
+| Loại | Tên file | Export |
 |---|---|---|
-| Thư mục, file | kebab-case | `book-editor.tsx`, `use-flipbook.ts` |
-| Component, type | PascalCase | `BookEditor`, `BookData` |
-| Hook | camelCase, bắt đầu `use` | `useBookEditor` |
-| Barrel | luôn là `index.ts` | `features/book/index.ts` |
-| File server | `server.ts`, `actions.ts` | cố định, không đổi tên |
+| Component | `PascalCase.tsx` | một default, trùng tên file |
+| Hook | `useXxx.ts` | một default, trùng tên file |
+| Store | `PascalCase.ts` | một default, trùng tên file |
+| Resource | `kebab-case.ts` | named: schema, type, hàm |
+| Form schema | `kebab-case.ts` | named: `<Name>FormSchema`, type |
+| Type | `kebab-case.ts` | named |
+| Util | `kebab-case.ts` | named |
+| Barrel | `index.ts` | re-export |
+| Server | `server.ts`, `session.ts` | named, server-only |
+| Action | `actions.ts` | named async function |
 
-## 8. Nhánh
+File framework của Next (`page.tsx`, `layout.tsx`, `route.ts`, `error.tsx`, `proxy.ts`, `next.config.ts`, `drizzle.config.ts`) và các file tổng hợp (`index.ts`, `actions.ts`) là ngoại lệ của luật một default export.
 
-- `old-design` — bản cũ còn chạy được (timeline, Moment, Supabase). Giữ nguyên để đối chiếu và làm fallback; không phát triển tiếp trên nhánh này.
-- `rewrite/book-sqlite` — nhánh refactor sang kiến trúc feature + SQLite.
-- `main` — đích đến cuối cùng, chỉ merge khi refactor xong và đã kiểm tra.
+## 8. Page pattern
 
-## 9. Những thứ đã bị loại bỏ có chủ đích
+Page trong `app/` mỏng: đọc dữ liệu qua `server.ts`, render component của feature hoặc `_components` riêng của route. Phần tương tác tách vào `_hooks`, phần helper thuần vào `_lib`. Route con không import từ route cha.
+
+Ví dụ đầy đủ: [page-pattern.md](page-pattern.md).
+
+## 9. Tooling
+
+| Lệnh | Việc |
+|---|---|
+| `bun run fmt` | `biome format --write`, chạy sau mỗi lần sửa code |
+| `bun run check` | `tsc --noEmit` |
+| `bun run cycles` | tìm vòng import runtime, exit 1 khi có vòng |
+| `bun run conventions` | một default export, server-only, barrel, `"use server"` |
+| `bunx biome lint src` | lint + luật tên file |
+| `bun run lint` | eslint |
+
+Thứ tự trước khi commit: `fmt`, `check`, `cycles`, `conventions`.
+
+Luật tên file của Biome bật cho `src/**` (trừ `src/app/**`): component và provider PascalCase, hook camelCase, còn lại kebab-case. `index.ts` được miễn.
+
+## 10. Những thứ đã bị loại bỏ có chủ đích
 
 Ghi lại để người sau không vô tình đưa chúng trở lại:
 
-- **Supabase** (Auth, Postgres, Storage) — thay bằng SQLite/Turso, session cookie và object storage.
-- **TanStack Query** — dữ liệu đọc ở Server Component, mutation ở Server Action. Lý do: DB nằm trên server, client không query được; giữ TanStack sẽ buộc phải dựng thêm một tầng API không cần thiết cho một app hai người dùng.
-- **Moment và các route/UI gắn với Moment** — trang chủ timeline cũ, form tạo Moment, modal chi tiết và toàn bộ hook/store liên quan đã bị xoá. Nội dung cuốn sổ sẽ do feature `book` tự định nghĩa.
-- **Quest / trivia / profile** — không còn là phần của ứng dụng.
+- **Supabase**: thay bằng SQLite/Turso, session cookie và Drizzle.
+- **TanStack Query**: dữ liệu đọc ở Server Component, ghi ở Server Action. Client không query DB, không có tầng API trung gian.
+- **Zod**: valibot là thư viện schema duy nhất.
+- **Namespace**: resource dùng named export, không dùng `namespace`.
+- **Moment, quest, trivia, profile**: không còn là phần của ứng dụng.
+- **Editor cũ**: đang được thiết kế lại; sổ hiện read-only.
 
-Hai thứ được giữ lại có chủ đích dưới dạng feature độc lập:
+`features/timeline` và `features/music` được giữ như feature độc lập, chưa route tới.
 
-- `features/timeline` — timeline cuộn, nhưng không còn biết `Moment` là gì: nó nhận danh sách item chung và hàm render do nơi dùng truyền vào.
-- `features/music` — tìm và phát nhạc qua Deezer, gồm component tìm kiếm, types và proxy phía server (`server.ts`, có `import "server-only"`). Route handler trong `app/api/music` chỉ còn là vỏ mỏng gọi vào feature.
+## 11. Checklist khi thêm một feature
 
-## 10. Checklist khi thêm một feature
-
-1. Tạo `features/<tên>/` với đúng các thư mục thực sự cần.
-2. Tạo `index.ts` cho từng thư mục con và `index.ts` cho feature.
-3. Nếu có code server: đặt ở `server.ts` hoặc `utils/server-*.ts`, kèm `import "server-only"`, và không export qua barrel con.
-4. Nếu có mutation: đặt ở `actions.ts`, validate bằng zod, kiểm tra session.
-5. Route trong `app/` chỉ được import từ `@/features/<tên>`, không deep import.
-6. Chạy `bunx tsc --noEmit` trước khi commit.
+1. Tạo `features/<feature>/` với đúng thư mục cần dùng, kèm `README.md`.
+2. Tạo `index.ts` cho từng thư mục con và cho feature, chỉ export thứ client-safe.
+3. Có đọc DB hoặc secret: đặt ở `server.ts`, mở đầu bằng `import "server-only"`.
+4. Có mutation: đặt ở `actions.ts`, mở đầu bằng `"use server"`, tự xác thực session và parse bằng valibot.
+5. Khai báo resource ở `resources/<kebab>.ts` trước khi viết query, để type đi từ schema.
+6. Route trong `app/` chỉ import barrel feature hoặc `features/<feature>/server`.
+7. Chạy `bun run fmt`, `bun run check`, `bun run cycles`, `bun run conventions`.

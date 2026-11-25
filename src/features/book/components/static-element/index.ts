@@ -1,4 +1,9 @@
-export * from "./book-number";
-export * from "./end-book-page";
-export * from "./front-book-cover";
-export * from "./intro-book-pages";
+export { default as BookNumber } from "./BookNumber";
+export { default as EndBookPage } from "./EndBookPage";
+export { default as FrontBookCover } from "./FrontBookCover";
+export { default as IntroBookPage1 } from "./IntroBookPage1";
+export { default as IntroBookPage2 } from "./IntroBookPage2";
+export { default as IntroBookPage3 } from "./IntroBookPage3";
+export { default as IntroBookPage4 } from "./IntroBookPage4";
+export { default as IntroBookPage5 } from "./IntroBookPage5";
+export { default as IntroBookPages } from "./IntroBookPages";

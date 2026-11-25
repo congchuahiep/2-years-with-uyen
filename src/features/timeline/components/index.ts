@@ -1,2 +1,2 @@
-export * from "./timeline";
-export * from "./year-indicator-item";
+export { default as Timeline } from "./Timeline";
+export { default as YearIndicatorItem } from "./YearIndicatorItem";

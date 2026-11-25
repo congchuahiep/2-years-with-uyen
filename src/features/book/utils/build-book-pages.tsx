@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import type { PageFace, PageFaceSide } from "../types";
-import { BookCover } from "../components/book-cover";
-import { BookPage } from "../components/book-page";
-import { BookPageScale } from "../components/book-page-scale";
+import type { PageFace } from "../types/page-face";
+import type { PageFaceSide } from "../types/page-face";
+import BookCover from "../components/BookCover";
+import BookPage from "../components/BookPage";
+import BookPageScale from "../components/BookPageScale";
 
 /**
  * ! THỨ TỰ MẶT TRANG
@@ -13,8 +14,8 @@ import { BookPageScale } from "../components/book-page-scale";
 export const LEFT_PAGE_FIRST = true;
 
 interface BuildBookPagesLayout {
-	/** true = 1 trang, false = mở 2 trang */
-	portrait: boolean;
+  /** true = 1 trang, false = mở 2 trang */
+  portrait: boolean;
 }
 
 /**
@@ -25,21 +26,21 @@ interface BuildBookPagesLayout {
  * Chế độ portrait vẽ mọi mặt như trang phải (`side = "right"`).
  */
 function renderFace(
-	face: PageFace,
-	faceIndex: number,
-	portrait: boolean,
+  face: PageFace,
+  faceIndex: number,
+  portrait: boolean,
 ): ReactNode {
-	const side: PageFaceSide = portrait ? "right" : face.side;
+  const side: PageFaceSide = portrait ? "right" : face.side;
 
-	if (face.kind === "cover") {
-		return face.side === "left" ? (
-			<BookCover side="left" />
-		) : (
-			<BookCover side="right" />
-		);
-	}
+  if (face.kind === "cover") {
+    return face.side === "left" ? (
+      <BookCover side="left" />
+    ) : (
+      <BookCover side="right" />
+    );
+  }
 
-	return <BookPage side={side} pageNumber={faceIndex} items={face.items} />;
+  return <BookPage side={side} pageNumber={faceIndex} items={face.items} />;
 }
 
 /**
@@ -51,35 +52,32 @@ function renderFace(
  * - Portrait: mỗi mặt trang là 1 child, hiển thị lần lượt như trang phải.
  */
 export function buildBookPages(
-	faces: PageFace[],
-	layout: BuildBookPagesLayout,
+  faces: PageFace[],
+  layout: BuildBookPagesLayout,
 ): ReactNode[] {
-	const children: ReactNode[] = [];
+  const children: ReactNode[] = [];
 
-	if (layout.portrait) {
-		for (const [index, face] of faces.entries()) {
-			children.push(
-				<BookPageScale key={`face-${index}`}>
-					{renderFace(face, index, layout.portrait)}
-				</BookPageScale>,
-			);
-		}
-		return children;
-	}
+  if (layout.portrait) {
+    for (const [index, face] of faces.entries()) {
+      children.push(
+        <BookPageScale key={`face-${index}`}>
+          {renderFace(face, index, layout.portrait)}
+        </BookPageScale>,
+      );
+    }
+    return children;
+  }
 
-	for (let index = 0; index < faces.length; index += 2) {
-		const left = faces[index];
-		const right = faces[index + 1];
-		children.push(
-			<BookPageScale
-				key={`spread-${index / 2}`}
-				className="grid grid-cols-2"
-			>
-				{left && renderFace(left, index, layout.portrait)}
-				{right && renderFace(right, index + 1, layout.portrait)}
-			</BookPageScale>,
-		);
-	}
+  for (let index = 0; index < faces.length; index += 2) {
+    const left = faces[index];
+    const right = faces[index + 1];
+    children.push(
+      <BookPageScale key={`spread-${index / 2}`} className="grid grid-cols-2">
+        {left && renderFace(left, index, layout.portrait)}
+        {right && renderFace(right, index + 1, layout.portrait)}
+      </BookPageScale>,
+    );
+  }
 
-	return children;
+  return children;
 }

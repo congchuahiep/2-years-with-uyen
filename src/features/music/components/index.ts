@@ -1,1 +1,1 @@
-export * from "./music-search-box";
+export { default as MusicSearchBox } from "./MusicSearchBox";

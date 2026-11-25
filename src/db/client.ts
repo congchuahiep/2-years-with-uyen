@@ -2,15 +2,16 @@ import "server-only";
 
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import { getEnv, getOptionalEnv } from "@/configs/env";
+import { getEnv } from "@/configs/env";
 import * as schema from "./schema";
 
 let database: ReturnType<typeof createDatabase> | undefined;
 
 function createDatabase() {
+  const env = getEnv();
   const client = createClient({
-    url: getEnv("DATABASE_URL"),
-    authToken: getOptionalEnv("DATABASE_AUTH_TOKEN"),
+    url: env.DATABASE_URL,
+    authToken: env.DATABASE_AUTH_TOKEN,
   });
   return drizzle(client, { schema });
 }

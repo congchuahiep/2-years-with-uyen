@@ -1,6 +1,6 @@
-export * from "./book";
-export * from "./book-page";
-export * from "./blank-book-page";
-export * from "./book-cover";
-export * from "./book-page-scale";
+export { default as BlankBookPage } from "./BlankBookPage";
+export { default as Book } from "./Book";
+export { default as BookCover } from "./BookCover";
+export { default as BookPage } from "./BookPage";
+export { default as BookPageScale } from "./BookPageScale";
 export * from "./static-element";

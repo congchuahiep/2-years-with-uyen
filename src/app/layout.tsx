@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
-import { MuteButton } from "@/shared/components/mute-button";
+import MuteButton from "@/shared/components/MuteButton";
 import { corinthia, fuzzyBubbles, pangolin } from "@/configs/font";
-import { AudioPreloaderProvider } from "@/shared/providers/audio-preloader-provider";
-import { ModalContentWrapper, ModalProvider } from "@/shared/providers/modal-provider";
+import AudioPreloaderProvider from "@/shared/providers/AudioPreloaderProvider";
+import ModalContentWrapper from "@/shared/providers/ModalContentWrapper";
+import ModalProvider from "@/shared/providers/ModalProvider";
 
 export const metadata: Metadata = {
   title: "2 năm cùng nhau",

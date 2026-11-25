@@ -1,2 +1,2 @@
-export * from "./dezzer-api";
-export * from "./dezzer-endpoint";
+export * from "./deezer-endpoint";
+export * from "./deezer-search";
